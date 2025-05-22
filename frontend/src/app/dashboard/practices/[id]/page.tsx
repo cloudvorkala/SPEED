@@ -1,10 +1,9 @@
 import Link from "next/link";
 
-export default function PracticeDetail({ params }: { params: { id: string } }) {
-  // 在实际应用中，这里会根据ID从API获取数据
-  const practiceId = params.id;
+export default async function PracticeDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const practiceId = resolvedParams.id;
 
-  // 模拟数据
   const practiceData = {
     id: practiceId,
     name: getPracticeName(practiceId),

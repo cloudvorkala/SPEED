@@ -1,8 +1,8 @@
 import Link from "next/link";
 
-export default function ArticleDetail({ params }: { params: { id: string } }) {
-  // 在实际应用中，这里会根据ID从API获取数据
-  const articleId = params.id;
+export default async function ArticleDetail({ params }: { params: Promise<{ id: string }> }) {
+  const resolvedParams = await params;
+  const articleId = resolvedParams.id;
 
   // 模拟数据
   const articleData = {
