@@ -205,7 +205,7 @@ export default function SubmitArticle() {
                     onClick={addAuthor}
                     className="mt-2 inline-flex items-center px-3 py-1 border border-transparent text-sm font-medium rounded-md text-blue-700 bg-blue-100 hover:bg-blue-200 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   >
-                    Add Author
+                    Add Another Author
                   </button>
                 </div>
 
@@ -224,7 +224,7 @@ export default function SubmitArticle() {
                   />
                 </div>
 
-                {/* Year */}
+                {/* Year
                 <div>
                   <label htmlFor="year" className="block text-sm font-medium text-gray-700">
                     Year *
@@ -239,7 +239,33 @@ export default function SubmitArticle() {
                     onChange={(e) => setFormData({ ...formData, year: parseInt(e.target.value) })}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
+                </div> */}
+                {/* Year */}
+
+                <div>
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+                    Year *
+                  </label>
+                  <select
+                    id="year"
+                    required
+                    value={formData.year}
+                    onChange={(e) =>
+                      setFormData({ ...formData, year: parseInt(e.target.value) })
+                    }
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  >
+                    <option value="" disabled hidden>Select a year</option>
+                    {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i)
+                      .reverse()
+                      .map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                  </select>
                 </div>
+
 
                 {/* Volume */}
                 <div>

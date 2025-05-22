@@ -34,6 +34,19 @@ export default function SearchPage() {
     year: "",
     status: "",
   });
+  // clear filters and results
+  const handleClearFilters = () => {
+    setFilters({
+      title: "",
+      author: "",
+      journal: "",
+      year: "",
+      status: "",
+    });
+    setArticles([]);
+    setError("");
+  };
+
 
   const handleSearch = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -183,7 +196,7 @@ export default function SearchPage() {
                   />
                 </div>
 
-                <div className="sm:col-span-2">
+                {/* <div className="sm:col-span-2">
                   <label htmlFor="year" className="block text-sm font-medium text-gray-700">
                     Year
                   </label>
@@ -197,6 +210,28 @@ export default function SearchPage() {
                     max={new Date().getFullYear()}
                     className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   />
+                </div> */}
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
+                  <select
+                    name="year"
+                    id="year"
+                    value={filters.year}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full rounded-md border border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  >
+                    <option value="">All Years</option>
+                    {Array.from({ length: new Date().getFullYear() - 1899 }, (_, i) => 1900 + i)
+                      .reverse()
+                      .map((year) => (
+                        <option key={year} value={year}>
+                          {year}
+                        </option>
+                      ))}
+                  </select>
                 </div>
 
                 <div className="sm:col-span-2">
@@ -217,13 +252,31 @@ export default function SearchPage() {
                   </select>
                 </div>
 
-                <div className="sm:col-span-6 flex justify-end">
+                {/* <div className="sm:col-span-6 flex justify-end">
                   <button
                     type="submit"
                     disabled={loading}
                     className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                   >
                     {loading ? "Searching..." : "Search"}
+                  </button>
+                </div> */}
+
+                <div className="sm:col-span-6 flex justify-end space-x-2 mt-4">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                  >
+                    {loading ? "Searching..." : "Search"}
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleClearFilters}
+                    className="inline-flex justify-center py-2 px-4 border border-red-600 shadow-sm text-sm font-medium rounded-md text-white bg-red-600 hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
+
+                  >
+                    Clear Filters
                   </button>
                 </div>
               </div>
@@ -262,13 +315,12 @@ export default function SearchPage() {
                         </div>
                         <div className="ml-4 flex-shrink-0 flex items-center space-x-4">
                           <span
-                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                              article.status === "APPROVED"
-                                ? "bg-green-100 text-green-800"
-                                : article.status === "REJECTED"
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${article.status === "APPROVED"
+                              ? "bg-green-100 text-green-800"
+                              : article.status === "REJECTED"
                                 ? "bg-red-100 text-red-800"
                                 : "bg-yellow-100 text-yellow-800"
-                            }`}
+                              }`}
                           >
                             {article.status}
                           </span>
