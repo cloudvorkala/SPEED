@@ -14,6 +14,8 @@ import { ArticlesModule } from './modules/articles/articles.module';
 import { PracticesModule } from './modules/practices/practices.module';
 import { ClaimsModule } from './modules/claims/claims.module';
 import { EvidenceModule } from './modules/evidence/evidence.module';
+import { UsersModule } from './users/users.module';
+import { AuthModule } from './auth/auth.module';
 
 @Module({
   imports: [
@@ -34,6 +36,8 @@ import { EvidenceModule } from './modules/evidence/evidence.module';
     PracticesModule,
     ClaimsModule,
     EvidenceModule,
+    UsersModule,
+    AuthModule,
   ],
   controllers: [AppController],
   providers: [AppService],
