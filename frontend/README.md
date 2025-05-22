@@ -1,24 +1,68 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# SPEED - Software Practice Empirical Evidence Database
+
+SPEED is a web application built with Next.js that helps researchers and practitioners track and analyze software engineering practices and their empirical evidence.
+
+## Features
+
+- Browse software engineering practices
+- Search for evidence about practices
+- Submit and review research articles
+- Track claims and their supporting evidence
+- User authentication and authorization
+
+## Tech Stack
+
+- [Next.js](https://nextjs.org) - React framework
+- [TypeScript](https://www.typescriptlang.org/) - Type safety
+- [Tailwind CSS](https://tailwindcss.com) - Styling
+- [Geist Font](https://vercel.com/font) - Typography
 
 ## Getting Started
 
-First, run the development server:
+First, install dependencies:
+
+```bash
+npm install
+# or
+yarn install
+```
+
+Then, run the development server:
 
 ```bash
 npm run dev
 # or
 yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open [http://localhost:3000](http://localhost:3000) with your browser to see the application.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Project Structure
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+- `src/app` - Next.js app directory
+  - `dashboard` - Main application pages
+  - `register` - User registration
+  - `layout.tsx` - Root layout
+  - `page.tsx` - Home page
+
+## Development
+
+- `npm run dev` - Start development server
+- `npm run build` - Build for production
+- `npm run start` - Start production server
+- `npm run lint` - Run ESLint
+
+## Contributing
+
+1. Fork the repository
+2. Create your feature branch
+3. Commit your changes
+4. Push to the branch
+5. Create a Pull Request
+
+## License
+
+This project is part of the AUT Software Engineering Research Group (SERG).
 
 ## Learn More
 
