@@ -7,13 +7,14 @@ export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) {}
 
   @Get()
-  async findAll(@Query('status') status?: string): Promise<Article[]> {
-    if (status === 'pending') {
-      return this.articlesService.findPending();
-    } else if (status === 'approved') {
-      return this.articlesService.findApproved();
-    }
-    return this.articlesService.findAll();
+  async findAll(
+    @Query('status') status?: string,
+    @Query('author') author?: string,
+    @Query('title') title?: string,
+    @Query('journal') journal?: string,
+    @Query('year') year?: string,
+  ): Promise<Article[]> {
+    return this.articlesService.findAll({ status, author, title, journal, year });
   }
 
   @Get(':id')

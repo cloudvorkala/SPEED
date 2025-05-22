@@ -9,8 +9,38 @@ export class ArticlesService {
     @InjectModel(Article.name) private articleModel: Model<ArticleDocument>,
   ) {}
 
-  async findAll(): Promise<Article[]> {
-    return this.articleModel.find().exec();
+  async findAll(filters?: {
+    author?: string;
+    title?: string;
+    journal?: string;
+    year?: string;
+    status?: string;
+  }): Promise<Article[]> {
+    const query: {
+      authors?: { $regex: string; $options: string };
+      title?: { $regex: string; $options: string };
+      journal?: { $regex: string; $options: string };
+      year?: number;
+      status?: string;
+    } = {};
+
+    if (filters?.author) {
+      query.authors = { $regex: filters.author, $options: 'i' };
+    }
+    if (filters?.title) {
+      query.title = { $regex: filters.title, $options: 'i' };
+    }
+    if (filters?.journal) {
+      query.journal = { $regex: filters.journal, $options: 'i' };
+    }
+    if (filters?.year) {
+      query.year = parseInt(filters.year);
+    }
+    if (filters?.status) {
+      query.status = filters.status.toUpperCase();
+    }
+
+    return this.articleModel.find(query).exec();
   }
 
   async findOne(id: string): Promise<Article> {

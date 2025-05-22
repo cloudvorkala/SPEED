@@ -1,6 +1,53 @@
+"use client";
+
 import Link from "next/link";
+import { useEffect, useState } from "react";
+
+interface Article {
+  _id: string;
+  title: string;
+  authors: string[];
+  year: number;
+  status: string;
+}
 
 export default function Dashboard() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchArticles = async () => {
+      try {
+        console.log("Fetching articles...");
+        const response = await fetch("http://localhost:4000/articles", {
+          method: "GET",
+          headers: {
+            "Accept": "application/json",
+          },
+        });
+
+        console.log("Response status:", response.status);
+        if (!response.ok) {
+          const errorText = await response.text();
+          console.error("Error response:", errorText);
+          throw new Error(`Failed to fetch articles: ${response.status} ${errorText}`);
+        }
+
+        const data = await response.json();
+        console.log("Received data:", data);
+        setArticles(data);
+      } catch (err) {
+        console.error("Error fetching articles:", err);
+        setError(err instanceof Error ? err.message : "Failed to load articles");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchArticles();
+  }, []);
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top navigation bar */}
@@ -99,36 +146,44 @@ export default function Dashboard() {
         <div className="mt-8">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Recently Approved Articles</h2>
           <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <ul className="divide-y divide-gray-200">
-              {[1, 2, 3].map((item) => (
-                <li key={item}>
-                  <div className="px-4 py-4 sm:px-6">
-                    <div className="flex items-center justify-between">
-                      <p className="text-sm font-medium text-blue-600 truncate">
-                        <Link href={`/dashboard/articles/article${item}`}>
-                          Article Title {item}: Research on Software Engineering Practices
-                        </Link>
-                      </p>
-                      <div className="ml-2 flex-shrink-0 flex">
-                        <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
-                          Approved
+            {loading ? (
+              <div className="px-4 py-4 text-center text-gray-500">Loading articles...</div>
+            ) : error ? (
+              <div className="px-4 py-4 text-center text-red-500">{error}</div>
+            ) : articles.length === 0 ? (
+              <div className="px-4 py-4 text-center text-gray-500">No articles found</div>
+            ) : (
+              <ul className="divide-y divide-gray-200">
+                {articles.map((article) => (
+                  <li key={article._id}>
+                    <div className="px-4 py-4 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <p className="text-sm font-medium text-blue-600 truncate">
+                          <Link href={`/dashboard/articles/${article._id}`}>
+                            {article.title}
+                          </Link>
                         </p>
+                        <div className="ml-2 flex-shrink-0 flex">
+                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                            {article.status}
+                          </p>
+                        </div>
+                      </div>
+                      <div className="mt-2 sm:flex sm:justify-between">
+                        <div className="sm:flex">
+                          <p className="flex items-center text-sm text-gray-500">
+                            Authors: {article.authors.join(", ")}
+                          </p>
+                        </div>
+                        <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
+                          Published: {article.year}
+                        </div>
                       </div>
                     </div>
-                    <div className="mt-2 sm:flex sm:justify-between">
-                      <div className="sm:flex">
-                        <p className="flex items-center text-sm text-gray-500">
-                          Authors: John Doe, Jane Smith, Robert Johnson
-                        </p>
-                      </div>
-                      <div className="mt-2 flex items-center text-sm text-gray-500 sm:mt-0">
-                        Published: 2023
-                      </div>
-                    </div>
-                  </div>
-                </li>
-              ))}
-            </ul>
+                  </li>
+                ))}
+              </ul>
+            )}
           </div>
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { Module } from '@nestjs/common';
+import { Module, OnModuleInit } from '@nestjs/common';
 import { MongooseModule } from '@nestjs/mongoose';
 import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
@@ -16,6 +16,8 @@ import { ClaimsModule } from './modules/claims/claims.module';
 import { EvidenceModule } from './modules/evidence/evidence.module';
 import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
+import { DatabaseModule } from './database/database.module';
+import { SeederService } from './database/seeder.service';
 
 @Module({
   imports: [
@@ -32,6 +34,7 @@ import { AuthModule } from './auth/auth.module';
       { name: Rating.name, schema: RatingSchema },
       { name: SavedQuery.name, schema: SavedQuerySchema },
     ]),
+    DatabaseModule,
     ArticlesModule,
     PracticesModule,
     ClaimsModule,
@@ -42,4 +45,10 @@ import { AuthModule } from './auth/auth.module';
   controllers: [AppController],
   providers: [AppService],
 })
-export class AppModule {}
+export class AppModule implements OnModuleInit {
+  constructor(private readonly seederService: SeederService) {}
+
+  async onModuleInit() {
+    await this.seederService.seed();
+  }
+}

@@ -1,6 +1,74 @@
+"use client";
+
+import { useState } from "react";
 import Link from "next/link";
 
-export default function Search() {
+interface Article {
+  _id: string;
+  title: string;
+  authors: string[];
+  journal: string;
+  year: number;
+  doi: string;
+  status: string;
+  averageRating: number;
+  ratingCount: number;
+}
+
+interface SearchFilters {
+  title: string;
+  author: string;
+  journal: string;
+  year: string;
+  status: string;
+}
+
+export default function SearchPage() {
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const [filters, setFilters] = useState<SearchFilters>({
+    title: "",
+    author: "",
+    journal: "",
+    year: "",
+    status: "",
+  });
+
+  const handleSearch = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setLoading(true);
+    setError("");
+
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      if (filters.title) params.append("title", filters.title);
+      if (filters.author) params.append("author", filters.author);
+      if (filters.journal) params.append("journal", filters.journal);
+      if (filters.year) params.append("year", filters.year);
+      if (filters.status) params.append("status", filters.status);
+
+      const response = await fetch(`http://localhost:4000/articles?${params.toString()}`);
+      if (!response.ok) {
+        throw new Error("Failed to fetch articles");
+      }
+
+      const data = await response.json();
+      setArticles(data);
+    } catch (err) {
+      setError("Failed to search articles. Please try again.");
+      console.error("Error searching articles:", err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleFilterChange = (e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>) => {
+    const { name, value } = e.target;
+    setFilters((prev) => ({ ...prev, [name]: value }));
+  };
+
   return (
     <div className="min-h-screen bg-gray-50">
       {/* Top navigation bar */}
@@ -26,7 +94,7 @@ export default function Search() {
                 </Link>
                 <Link
                   href="/dashboard/search"
-                  className="px-3 py-2 text-sm font-medium text-blue-600"
+                  className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
                 >
                   Search
                 </Link>
@@ -49,212 +117,174 @@ export default function Search() {
 
       {/* Main content */}
       <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6">
-        <h1 className="text-2xl font-bold text-gray-900 mb-6">Search Evidence</h1>
+        <div className="mb-8">
+          <div className="flex items-center mb-4">
+            <Link href="/dashboard" className="text-sm text-blue-600 hover:text-blue-800 mr-2">
+              ← Back to Dashboard
+            </Link>
+          </div>
 
-        {/* Search form */}
-        <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-8">
-          <div className="px-4 py-5 sm:p-6">
-            <form>
-              <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
-                <div>
-                  <label
-                    htmlFor="practice"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Software Engineering Practice
+          {/* Search form */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg mb-6">
+            <div className="px-4 py-5 sm:px-6">
+              <h2 className="text-lg font-medium text-gray-900">Search Articles</h2>
+              <p className="mt-1 text-sm text-gray-500">
+                Use the filters below to search for articles in the database.
+              </p>
+            </div>
+
+            <form onSubmit={handleSearch} className="border-t border-gray-200 px-4 py-5 sm:px-6">
+              {error && (
+                <div className="mb-4 p-4 text-sm text-red-700 bg-red-100 rounded-lg" role="alert">
+                  {error}
+                </div>
+              )}
+
+              <div className="grid grid-cols-1 gap-y-6 gap-x-4 sm:grid-cols-6">
+                <div className="sm:col-span-3">
+                  <label htmlFor="title" className="block text-sm font-medium text-gray-700">
+                    Title
+                  </label>
+                  <input
+                    type="text"
+                    name="title"
+                    id="title"
+                    value={filters.title}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="author" className="block text-sm font-medium text-gray-700">
+                    Author
+                  </label>
+                  <input
+                    type="text"
+                    name="author"
+                    id="author"
+                    value={filters.author}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="sm:col-span-3">
+                  <label htmlFor="journal" className="block text-sm font-medium text-gray-700">
+                    Journal
+                  </label>
+                  <input
+                    type="text"
+                    name="journal"
+                    id="journal"
+                    value={filters.journal}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="year" className="block text-sm font-medium text-gray-700">
+                    Year
+                  </label>
+                  <input
+                    type="number"
+                    name="year"
+                    id="year"
+                    value={filters.year}
+                    onChange={handleFilterChange}
+                    min="1900"
+                    max={new Date().getFullYear()}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
+                  />
+                </div>
+
+                <div className="sm:col-span-2">
+                  <label htmlFor="status" className="block text-sm font-medium text-gray-700">
+                    Status
                   </label>
                   <select
-                    id="practice"
-                    name="practice"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                    name="status"
+                    id="status"
+                    value={filters.status}
+                    onChange={handleFilterChange}
+                    className="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500 sm:text-sm"
                   >
-                    <option value="">Select a practice</option>
-                    <option value="tdd">Test-Driven Development (TDD)</option>
-                    <option value="pair-programming">Pair Programming</option>
-                    <option value="code-review">Code Review</option>
-                    <option value="agile">Agile Methods</option>
-                    <option value="devops">DevOps</option>
+                    <option value="">All</option>
+                    <option value="PENDING">Pending</option>
+                    <option value="APPROVED">Approved</option>
+                    <option value="REJECTED">Rejected</option>
                   </select>
                 </div>
 
-                <div>
-                  <label htmlFor="claim" className="block text-sm font-medium text-gray-700 mb-1">
-                    Claim
-                  </label>
-                  <select
-                    id="claim"
-                    name="claim"
-                    className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                <div className="sm:col-span-6 flex justify-end">
+                  <button
+                    type="submit"
+                    disabled={loading}
+                    className="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
                   >
-                    <option value="">Select a claim</option>
-                    <option value="quality">Improves Code Quality</option>
-                    <option value="bugs">Reduces Defects</option>
-                    <option value="productivity">Increases Productivity</option>
-                    <option value="satisfaction">Improves Developer Satisfaction</option>
-                  </select>
+                    {loading ? "Searching..." : "Search"}
+                  </button>
                 </div>
-
-                <div>
-                  <label
-                    htmlFor="year-range"
-                    className="block text-sm font-medium text-gray-700 mb-1"
-                  >
-                    Publication Year Range
-                  </label>
-                  <div className="flex items-center space-x-2">
-                    <input
-                      type="number"
-                      id="start-year"
-                      placeholder="Start year"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                    />
-                    <span className="text-gray-500">-</span>
-                    <input
-                      type="number"
-                      id="end-year"
-                      placeholder="End year"
-                      className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
-                    />
-                  </div>
-                </div>
-              </div>
-
-              <div className="mt-6 flex justify-end">
-                <button
-                  type="submit"
-                  className="inline-flex justify-center rounded-md border border-transparent bg-blue-600 py-2 px-4 text-sm font-medium text-white shadow-sm hover:bg-blue-700 focus:outline-none"
-                >
-                  Search
-                </button>
-                <button
-                  type="button"
-                  className="ml-3 inline-flex justify-center rounded-md border border-gray-300 bg-white py-2 px-4 text-sm font-medium text-gray-700 shadow-sm hover:bg-gray-50 focus:outline-none"
-                >
-                  Save Query
-                </button>
               </div>
             </form>
           </div>
-        </div>
 
-        {/* Search results */}
-        <div>
-          <h2 className="text-xl font-semibold text-gray-900 mb-4">Search Results</h2>
-
-          <div className="bg-white shadow overflow-hidden sm:rounded-md">
-            <div className="border-b border-gray-200 px-4 py-4 sm:px-6">
-              <div className="flex items-center justify-between">
-                <h3 className="text-lg font-medium leading-6 text-gray-900">
-                  Test-Driven Development (TDD) and Code Quality Improvement
-                </h3>
-              </div>
-              <p className="mt-1 text-sm text-gray-500">Found 5 relevant articles</p>
+          {/* Search results */}
+          <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+            <div className="px-4 py-5 sm:px-6">
+              <h3 className="text-lg font-medium text-gray-900">Search Results</h3>
+              <p className="mt-1 text-sm text-gray-500">
+                {articles.length} articles found
+              </p>
             </div>
 
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Article Title
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Authors
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Year
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Result
-                    </th>
-                    <th
-                      scope="col"
-                      className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"
-                    >
-                      Research Type
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {[
-                    {
-                      title: "Impact of Test-Driven Development on Code Quality: An Empirical Study",
-                      authors: "John Smith, Jane Doe",
-                      year: "2021",
-                      result: "Agree",
-                      type: "Experiment",
-                    },
-                    {
-                      title: "Comparing TDD and Traditional Development Methods on Code Quality",
-                      authors: "Robert Johnson, Mary Williams",
-                      year: "2019",
-                      result: "Agree",
-                      type: "Case Study",
-                    },
-                    {
-                      title: "TDD Application in Enterprise Environments and its Impact on Code Quality",
-                      authors: "David Brown, Lisa Green",
-                      year: "2020",
-                      result: "Disagree",
-                      type: "Experiment",
-                    },
-                    {
-                      title: "Test-Driven Development and Code Quality: A Literature Review",
-                      authors: "Michael Davis, Sarah Wilson",
-                      year: "2022",
-                      result: "Neutral",
-                      type: "Literature Review",
-                    },
-                    {
-                      title: "Differences in Code Quality Impact of TDD Among Various Development Teams",
-                      authors: "Chris Taylor, Amanda Miller",
-                      year: "2023",
-                      result: "Agree",
-                      type: "Survey",
-                    },
-                  ].map((paper, index) => (
-                    <tr key={index}>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-blue-600 hover:underline">
-                        <Link href={`/dashboard/articles/${index}`}>{paper.title}</Link>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {paper.authors}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {paper.year}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        <span
-                          className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
-                            paper.result === "Agree"
-                              ? "bg-green-100 text-green-800"
-                              : paper.result === "Disagree"
-                              ? "bg-red-100 text-red-800"
-                              : "bg-yellow-100 text-yellow-800"
-                          }`}
-                        >
-                          {paper.result}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                        {paper.type}
-                      </td>
-                    </tr>
+            <div className="border-t border-gray-200">
+              {articles.length === 0 ? (
+                <div className="px-4 py-5 sm:px-6 text-center text-gray-500">
+                  No articles found. Try adjusting your search filters.
+                </div>
+              ) : (
+                <ul className="divide-y divide-gray-200">
+                  {articles.map((article) => (
+                    <li key={article._id} className="px-4 py-5 sm:px-6">
+                      <div className="flex items-center justify-between">
+                        <div className="flex-1 min-w-0">
+                          <Link
+                            href={`/dashboard/articles/${article._id}`}
+                            className="text-lg font-medium text-blue-600 hover:text-blue-800 truncate"
+                          >
+                            {article.title}
+                          </Link>
+                          <p className="mt-1 text-sm text-gray-500">
+                            {article.authors.join(", ")} • {article.journal} ({article.year})
+                          </p>
+                        </div>
+                        <div className="ml-4 flex-shrink-0 flex items-center space-x-4">
+                          <span
+                            className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${
+                              article.status === "APPROVED"
+                                ? "bg-green-100 text-green-800"
+                                : article.status === "REJECTED"
+                                ? "bg-red-100 text-red-800"
+                                : "bg-yellow-100 text-yellow-800"
+                            }`}
+                          >
+                            {article.status}
+                          </span>
+                          <div className="flex items-center">
+                            <span className="text-yellow-400">{'★'.repeat(Math.round(article.averageRating))}</span>
+                            <span className="text-gray-300">{'★'.repeat(5 - Math.round(article.averageRating))}</span>
+                            <span className="ml-1 text-sm text-gray-500">
+                              ({article.averageRating.toFixed(1)}/5)
+                            </span>
+                          </div>
+                        </div>
+                      </div>
+                    </li>
                   ))}
-                </tbody>
-              </table>
+                </ul>
+              )}
             </div>
           </div>
         </div>
