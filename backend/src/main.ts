@@ -13,4 +13,4 @@ async function bootstrap() {
 
   await app.listen(process.env.PORT ?? 4000);
 }
-bootstrap().catch((err) => console.error('Bootstrap error:', err));
+bootstrap().catch((err) => console.error('Bootstrap error:', err)); 

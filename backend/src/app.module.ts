@@ -39,7 +39,7 @@ import { SeederService } from './database/seeder.service';
     PracticesModule,
     ClaimsModule,
     EvidenceModule,
-    UsersModule,
+    UsersModule, 
     AuthModule,
   ],
   controllers: [AppController],
