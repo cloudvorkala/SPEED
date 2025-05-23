@@ -5,7 +5,7 @@ interface Practice {
   _id: string;
   name: string;
   description: string;
-  claims: Array<{
+  claims?: Array<{
     _id: string;
     statement: string;
     evidence: Array<{
@@ -118,7 +118,7 @@ export default async function PracticeDetail({ params }: Props) {
 
           {/* Claims and evidence */}
           <div className="space-y-6">
-            {practice.claims.map((claim) => (
+            {practice.claims?.map((claim) => (
               <div key={claim._id} className="bg-white shadow overflow-hidden sm:rounded-lg">
                 <div className="px-4 py-5 sm:px-6">
                   <h2 className="text-lg font-medium text-gray-900">{claim.statement}</h2>
@@ -175,6 +175,13 @@ export default async function PracticeDetail({ params }: Props) {
                 </div>
               </div>
             ))}
+            {!practice.claims || practice.claims.length === 0 ? (
+              <div className="bg-white shadow overflow-hidden sm:rounded-lg">
+                <div className="px-4 py-5 sm:px-6">
+                  <p className="text-sm text-gray-500">No claims available for this practice.</p>
+                </div>
+              </div>
+            ) : null}
           </div>
         </div>
       </div>
