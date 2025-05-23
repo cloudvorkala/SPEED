@@ -1,4 +1,4 @@
-import { Body, Controller, Get, Param, Post, Put, Query } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from '../../models/article.model';
 
@@ -8,18 +8,17 @@ export class ArticlesController {
 
   @Get()
   async findAll(
-    @Query('status') status?: string,
     @Query('author') author?: string,
-    @Query('title') title?: string,
-    @Query('journal') journal?: string,
-    @Query('year') year?: string,
   ): Promise<Article[]> {
-    return this.articlesService.findAll({ status, author, title, journal, year });
+    // 只传 author，service 只支持 author
+    return this.articlesService.findAll({ author });
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string): Promise<Article> {
-    return this.articlesService.findOne(id);
+    const article = await this.articlesService.findOne(id);
+    if (!article) throw new NotFoundException('Article not found');
+    return article;
   }
 
   @Post()
@@ -32,7 +31,9 @@ export class ArticlesController {
     @Param('id') id: string,
     @Body() article: Partial<Article>,
   ): Promise<Article> {
-    return this.articlesService.update(id, article);
+    const updated = await this.articlesService.update(id, article);
+    if (!updated) throw new NotFoundException('Article not found');
+    return updated;
   }
 
   @Put(':id/moderate')
@@ -42,15 +43,15 @@ export class ArticlesController {
     moderationData: {
       status: 'APPROVED' | 'REJECTED';
       moderatorId: string;
-      rejectionReason?: string;
     },
   ): Promise<Article> {
-    return this.articlesService.moderate(
+    const moderated = await this.articlesService.moderate(
       id,
       moderationData.status,
       moderationData.moderatorId,
-      moderationData.rejectionReason,
     );
+    if (!moderated) throw new NotFoundException('Article not found');
+    return moderated;
   }
 
   @Put(':id/rate')
@@ -58,6 +59,8 @@ export class ArticlesController {
     @Param('id') id: string,
     @Body() ratingData: { rating: number },
   ): Promise<Article> {
-    return this.articlesService.updateRating(id, ratingData.rating);
+    const rated = await this.articlesService.updateRating(id, ratingData.rating);
+    if (!rated) throw new NotFoundException('Article not found');
+    return rated;
   }
 }
