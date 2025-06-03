@@ -1,3 +1,10 @@
+export interface User {
+  _id: string;
+  name: string;
+  email: string;
+  role: string;
+}
+
 export interface Article {
   _id: string;
   title: string;

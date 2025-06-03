@@ -116,11 +116,6 @@ export default function SubmitArticle() {
                 </Link>
               </div>
             </div>
-            <div className="flex items-center">
-              <button className="ml-3 text-sm font-medium text-gray-500 hover:text-gray-900">
-                Logout
-              </button>
-            </div>
           </div>
         </div>
       </nav>

@@ -1,4 +1,36 @@
-import { Controller } from '@nestjs/common';
+import { Controller, Get, Param, Delete, UseGuards, Req, ForbiddenException, NotFoundException } from '@nestjs/common';
+import { UsersService } from './users.service';
+import { User } from './schemas/user.schema';
+import { JwtAuthGuard } from '../auth/jwt-auth.guard'; // JwtAuthGuard
 
 @Controller('users')
-export class UsersController {}
+@UseGuards(JwtAuthGuard)
+export class UsersController {
+  constructor(private readonly usersService: UsersService) {}
+
+  private isAdmin(req: any): boolean {
+    return req.user && req.user.role === 'ADMIN';
+  }
+
+  @Get()
+  async findAll(@Req() req): Promise<User[]> {
+    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
+    return this.usersService.findAll();
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string, @Req() req): Promise<User> {
+    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
+    const user = await this.usersService.findById(id);
+    if (!user) throw new NotFoundException('User not found');
+    return user;
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string, @Req() req): Promise<{ deleted: boolean }> {
+    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
+    const result = await this.usersService.delete(id);
+    if (!result) throw new NotFoundException('User not found');
+    return { deleted: true };
+  }
+}

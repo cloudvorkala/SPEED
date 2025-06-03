@@ -82,11 +82,6 @@ export default function Dashboard() {
                 </Link>
               </div>
             </div>
-            <div className="flex items-center">
-              <button className="ml-3 text-sm font-medium text-gray-500 hover:text-gray-900">
-                Logout
-              </button>
-            </div>
           </div>
         </div>
       </nav>
@@ -164,9 +159,14 @@ export default function Dashboard() {
                           </Link>
                         </p>
                         <div className="ml-2 flex-shrink-0 flex">
-                          <p className="px-2 inline-flex text-xs leading-5 font-semibold rounded-full bg-green-100 text-green-800">
+                          <span className={`px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${article.status === "APPROVED"
+                            ? "bg-green-100 text-green-800"
+                            : article.status === "REJECTED"
+                              ? "bg-red-100 text-red-800"
+                              : "bg-yellow-100 text-yellow-800"
+                            }`}>
                             {article.status}
-                          </p>
+                          </span>
                         </div>
                       </div>
                       <div className="mt-2 sm:flex sm:justify-between">

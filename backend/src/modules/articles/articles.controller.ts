@@ -1,16 +1,17 @@
 import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from '../../models/article.model';
+import { Delete } from '@nestjs/common';
 
 @Controller('articles')
 export class ArticlesController {
-  constructor(private readonly articlesService: ArticlesService) {}
+  constructor(private readonly articlesService: ArticlesService) { }
 
   @Get()
   async findAll(
     @Query('author') author?: string,
   ): Promise<Article[]> {
-    // 只传 author，service 只支持 author
+    // only uploaded articles are returned
     return this.articlesService.findAll({ author });
   }
 
@@ -62,5 +63,12 @@ export class ArticlesController {
     const rated = await this.articlesService.updateRating(id, ratingData.rating);
     if (!rated) throw new NotFoundException('Article not found');
     return rated;
+  }
+
+  @Delete(':id')
+  async delete(@Param('id') id: string): Promise<{ deleted: boolean }> {
+    const deleted = await this.articlesService.delete(id);
+    if (!deleted) throw new NotFoundException('Article not found');
+    return { deleted: true };
   }
 }
