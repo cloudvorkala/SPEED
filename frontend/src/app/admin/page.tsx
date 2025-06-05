@@ -6,31 +6,35 @@ import { useEffect } from "react";
 import Link from "next/link";
 
 export default function AdminPanel() {
-  const { user, logout } = useAuth();
+  const { user, logout } = useAuth(); // Get current user and logout function from AuthContext
   const router = useRouter();
 
+  // Redirect non-admin users away from this page
   useEffect(() => {
     if (user && user.role !== "ADMIN") {
       router.replace("/");
     }
   }, [user, router]);
 
+  // Show loading state while user info is being retrieved
   if (user === null) {
     return <div className="p-8 text-center">Loading...</div>;
   }
 
+  // Show error if not an admin
   if (!user || user.role !== "ADMIN") {
     return <div className="p-8 text-center">Access denied.</div>;
   }
 
+  // Handle logout action
   const handleLogout = () => {
-    logout();
-    router.push("/");
+    logout(); // Clear user context and token
+    router.push("/"); // Redirect to home page
   };
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
-      {/* top navegation bar */}
+      {/* Top navigation bar */}
       <nav className="bg-white shadow-sm">
         <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 flex h-16 justify-between items-center">
           <span className="text-xl font-bold text-blue-600">SPEED Admin</span>
@@ -43,11 +47,13 @@ export default function AdminPanel() {
         </div>
       </nav>
 
-      {/* main content */}
+      {/* Main content */}
       <main className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-6 flex-grow">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Welcome to Admin Panel</h1>
 
+        {/* Admin functions section */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          {/* User Management Box */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Manage Users</h2>
             <p className="text-sm text-gray-600 mb-4">
@@ -61,6 +67,7 @@ export default function AdminPanel() {
             </Link>
           </div>
 
+          {/* Article Moderation Box */}
           <div className="bg-white shadow rounded-lg p-6">
             <h2 className="text-lg font-semibold text-gray-800 mb-2">Moderate Articles</h2>
             <p className="text-sm text-gray-600 mb-4">
@@ -76,7 +83,7 @@ export default function AdminPanel() {
         </div>
       </main>
 
-      {/* footpage */}
+      {/* Footer */}
       <footer className="bg-gray-50 py-4 text-center text-sm text-gray-600">
         <p>SPEED - Software Practice Empirical Evidence Database</p>
         <p className="mt-1">AUT Software Engineering Research Group (SERG)</p>
