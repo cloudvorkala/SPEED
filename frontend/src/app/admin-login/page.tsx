@@ -6,49 +6,59 @@ import { useAuth } from "../../contexts/AuthContext";
 import Link from "next/link";
 
 export default function AdminLogin() {
-  const { login } = useAuth();
-  const router = useRouter();
+  const { login } = useAuth(); // Access the login function from the Auth context
+  const router = useRouter(); // For navigation
 
+  // Form state
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
-  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(""); // Error message display
+  const [loading, setLoading] = useState(false); // Loading state
 
+  // Handle login form submission
   const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
+    e.preventDefault(); // Prevent default form submission
     setError("");
     setLoading(true);
+
     try {
-      const user = await login(email, password); // returns user object
+      const user = await login(email, password); // Attempt login, returns user object
       if (user.role === "ADMIN") {
-        router.push("/admin"); // to admin dashboard
+        router.push("/admin"); // Redirect if user is an admin
       } else {
-        setError("You do not have admin access."); // 
+        setError("You do not have admin access."); // Show access error
       }
     } catch {
-      setError("Invalid email or password");
+      setError("Invalid email or password"); // Authentication error
     } finally {
-      setLoading(false);
+      setLoading(false); // Reset loading state
     }
   };
 
   return (
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
+        {/* Header section */}
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-blue-600">Admin Login</h1>
+          <h1 className="text-4xl font-bold text-blue-600">SPEED</h1>
           <p className="mt-2 text-gray-600">Software Practice Empirical Evidence Database</p>
         </div>
 
+        {/* Login card */}
         <div className="overflow-hidden rounded-lg bg-white shadow-lg">
           <div className="px-6 py-8">
             <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800">Login as Admin</h2>
+
+            {/* Display error if any */}
             {error && (
               <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
                 {error}
               </div>
             )}
+
+            {/* Login form */}
             <form onSubmit={handleSubmit}>
+              {/* Email field */}
               <div className="mb-4">
                 <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
                   Email
@@ -63,6 +73,8 @@ export default function AdminLogin() {
                   onChange={(e) => setEmail(e.target.value)}
                 />
               </div>
+
+              {/* Password field */}
               <div className="mb-6">
                 <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
                   Password
@@ -77,6 +89,8 @@ export default function AdminLogin() {
                   onChange={(e) => setPassword(e.target.value)}
                 />
               </div>
+
+              {/* Submit button */}
               <button
                 type="submit"
                 disabled={loading}
@@ -86,6 +100,8 @@ export default function AdminLogin() {
               </button>
             </form>
           </div>
+
+          {/* Footer link */}
           <div className="border-t bg-gray-50 px-6 py-4 text-center">
             <Link href="/" className="text-sm font-medium text-blue-600 hover:text-blue-800">
               Back to Home
@@ -93,6 +109,7 @@ export default function AdminLogin() {
           </div>
         </div>
 
+        {/* Footer info */}
         <div className="mt-8 text-center text-sm text-gray-600">
           <p>SPEED - Software Practice Empirical Evidence Database</p>
           <p className="mt-1">AUT Software Engineering Research Group (SERG)</p>

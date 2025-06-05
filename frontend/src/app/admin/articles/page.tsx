@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 
+// Define the shape of article data
 interface Article {
   _id: string;
   title: string;
@@ -14,24 +15,26 @@ interface Article {
 }
 
 export default function AdminArticles() {
-  const { user, logout, loading: authLoading } = useAuth();
+  const { user, logout, loading: authLoading } = useAuth(); // Get user info and auth state
   const router = useRouter();
-  const [articles, setArticles] = useState<Article[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+  const [articles, setArticles] = useState<Article[]>([]); // Store fetched articles
+  const [loading, setLoading] = useState(true); // Loading state
+  const [error, setError] = useState(""); // Error message
 
+  // Authentication check on load
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.replace("/");
+        router.replace("/"); // Redirect if not logged in
       } else if (user.role !== "ADMIN") {
-        router.replace("/");
+        router.replace("/"); // Redirect if not admin
       } else {
-        fetchArticles();
+        fetchArticles(); // Load articles if valid admin
       }
     }
   }, [authLoading, user, router]);
 
+  // Fetch all articles from backend
   const fetchArticles = async () => {
     try {
       const token = localStorage.getItem("token");
@@ -48,6 +51,7 @@ export default function AdminArticles() {
     }
   };
 
+  // Handle moderation (approve/reject) or deletion
   const handleAction = async (id: string, status?: "APPROVED" | "REJECTED") => {
     const action = status ? `${status.toLowerCase()}` : "delete";
     const message = status
@@ -64,25 +68,33 @@ export default function AdminArticles() {
     try {
       const res = await fetch(url, {
         method,
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${token}`
+        },
         body: status ? JSON.stringify({ status }) : undefined,
       });
+
       if (!res.ok) throw new Error(`${action} failed`);
+
+      // Update UI after action
       setArticles((prev) =>
         status
-          ? prev.map((a) => (a._id === id ? { ...a, status } : a))
-          : prev.filter((a) => a._id !== id)
+          ? prev.map((a) => (a._id === id ? { ...a, status } : a)) // Update status
+          : prev.filter((a) => a._id !== id) // Remove deleted article
       );
     } catch (err) {
       alert(err instanceof Error ? err.message : "Action failed");
     }
   };
 
+  // Handle loading and permission states
   if (authLoading || loading) return <div className="p-8 text-center">Loading...</div>;
   if (!user || user.role !== "ADMIN") return <div className="p-8 text-center">Access denied.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
+      {/* Top navigation bar */}
       <nav className="bg-white shadow-sm w-full">
         <div className="max-w-7xl mx-auto px-4 py-4 flex justify-between items-center">
           <Link href="/admin" className="text-blue-600 font-medium hover:underline">← Admin Panel</Link>
@@ -90,13 +102,17 @@ export default function AdminArticles() {
         </div>
       </nav>
 
+      {/* Main content */}
       <main className="flex-grow max-w-7xl mx-auto p-4 sm:p-6 lg:p-8">
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Moderate Articles</h1>
+
+        {/* Error or empty state */}
         {error ? (
           <div className="text-center text-red-500">{error}</div>
         ) : articles.length === 0 ? (
           <div className="text-center text-gray-500">No articles found</div>
         ) : (
+          // Articles table
           <div className="overflow-x-auto rounded-lg shadow">
             <table className="min-w-full bg-white border border-gray-200">
               <thead className="bg-blue-100">
@@ -119,17 +135,36 @@ export default function AdminArticles() {
                         a.status === "APPROVED" ? "bg-green-100 text-green-800" :
                         a.status === "REJECTED" ? "bg-red-100 text-red-800" :
                         "bg-yellow-100 text-yellow-800"
-                      }`}>{a.status}</span>
+                      }`}>
+                        {a.status}
+                      </span>
                     </td>
                     <td className="px-6 py-4">
                       <div className="flex gap-2 flex-wrap justify-center">
+                        {/* Approve/Reject only for pending articles */}
                         {a.status === "PENDING" && (
                           <>
-                            <button onClick={() => handleAction(a._id, "APPROVED")} className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition">Approve</button>
-                            <button onClick={() => handleAction(a._id, "REJECTED")} className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs transition">Reject</button>
+                            <button
+                              onClick={() => handleAction(a._id, "APPROVED")}
+                              className="bg-green-500 hover:bg-green-600 text-white px-3 py-1 rounded text-xs transition"
+                            >
+                              Approve
+                            </button>
+                            <button
+                              onClick={() => handleAction(a._id, "REJECTED")}
+                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs transition"
+                            >
+                              Reject
+                            </button>
                           </>
                         )}
-                        <button onClick={() => handleAction(a._id)} className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition">Delete</button>
+                        {/* Delete available for all statuses */}
+                        <button
+                          onClick={() => handleAction(a._id)}
+                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
+                        >
+                          Delete
+                        </button>
                       </div>
                     </td>
                   </tr>
@@ -140,6 +175,7 @@ export default function AdminArticles() {
         )}
       </main>
 
+      {/* Footer */}
       <footer className="bg-gray-50 py-4 text-center text-sm text-gray-600">
         <p>SPEED - Software Practice Empirical Evidence Database</p>
         <p className="mt-1">AUT Software Engineering Research Group (SERG)</p>
