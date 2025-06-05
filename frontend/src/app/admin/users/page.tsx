@@ -6,19 +6,28 @@ import { useEffect, useState } from "react";
 import Link from "next/link";
 import { User } from "../../../types";
 
+interface ApiUser {
+  id?: string;
+  _id?: string;
+  email: string;
+  name: string;
+  role: string;
+}
+
 export default function AdminUsers() {
   const { user, loading: authLoading, logout } = useAuth();
   const router = useRouter();
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
+  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
   useEffect(() => {
-    if (!authLoading) {  // make sure auth loading is done
+    if (!authLoading) {
       if (!user) {
-        router.replace("/");  // user is not logged in
-      } else if (user.role !== "ADMIN") {
         router.replace("/");
+      } else if (user.role !== "ADMIN") {
+        router.replace("/dashboard");
       }
     }
   }, [authLoading, user, router]);
@@ -27,14 +36,55 @@ export default function AdminUsers() {
     if (user?.role === "ADMIN") {
       const fetchUsers = async () => {
         const token = localStorage.getItem('token');
+        if (!token) {
+          console.log('No token found');
+          setError("No authentication token found");
+          setLoading(false);
+          return;
+        }
+
         try {
-          const res = await fetch("http://localhost:4000/users", {
-            headers: { 'Authorization': `Bearer ${token}`, 'Accept': 'application/json' },
+          console.log('Fetching users with token:', token.substring(0, 20) + '...');
+          const res = await fetch(`${API_URL}/users`, {
+            headers: {
+              'Authorization': `Bearer ${token}`,
+              'Accept': 'application/json',
+              'Content-Type': 'application/json'
+            },
           });
-          if (!res.ok) throw new Error("Failed to fetch users");
+
+          console.log('Response status:', res.status);
+
+          if (res.status === 401) {
+            console.log('Token validation failed');
+            setError("Your session has expired. Please login again.");
+            logout();
+            router.replace("/");
+            return;
+          }
+
+          if (res.status === 403) {
+            console.log('Access denied');
+            setError("You don't have permission to access this page.");
+            router.replace("/dashboard");
+            return;
+          }
+
+          if (!res.ok) {
+            const errorData = await res.json().catch(() => ({}));
+            console.error('Error response:', errorData);
+            throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+          }
+
           const data = await res.json();
-          setUsers(data);
+          console.log('Users data:', data);
+          const formattedUsers = data.map((user: ApiUser) => ({
+            ...user,
+            _id: user.id || user._id,
+          }));
+          setUsers(formattedUsers as User[]);
         } catch (err) {
+          console.error('Fetch error:', err);
           setError(err instanceof Error ? err.message : "Failed to load users");
         } finally {
           setLoading(false);
@@ -42,17 +92,24 @@ export default function AdminUsers() {
       };
       fetchUsers();
     }
-  }, [user]);
+  }, [user, router, logout]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this user?")) return;
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`http://localhost:4000/users/${id}`, {
+      const res = await fetch(`${API_URL}/users/${id}`, {
         method: "DELETE",
-        headers: { 'Authorization': `Bearer ${token}` },
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
       });
-      if (!res.ok) throw new Error("Failed to delete user");
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+      }
       setUsers(users.filter(u => u._id !== id));
     } catch (err) {
       alert(err instanceof Error ? err.message : "Delete failed");

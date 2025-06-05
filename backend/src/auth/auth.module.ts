@@ -16,8 +16,11 @@ import { JwtStrategy } from './jwt.strategy';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (configService: ConfigService) => ({
-        secret: configService.get<string>('JWT_SECRET', 'default-secret'), // retrieve JWT secret from environment variables
-        signOptions: { expiresIn: '1d' },
+        secret: configService.get<string>('JWT_SECRET', 'your_jwt_secret'),
+        signOptions: {
+          expiresIn: '1d',
+          algorithm: 'HS256'
+        },
       }),
     }),
   ],

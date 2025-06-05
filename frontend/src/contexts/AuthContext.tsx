@@ -28,18 +28,20 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token) {
       try {
         const payload = JSON.parse(atob(token.split('.')[1]));
+        console.log('Token payload:', payload); // 调试信息
         setUser({
-          _id: payload.sub,  // check if your JWT payload has 'sub' or 'id'
+          _id: payload.sub,
           email: payload.email,
           name: payload.name || '',
           role: payload.role,
         });
-      } catch {
+      } catch (err) {
+        console.error('Token validation error:', err); // 调试信息
         localStorage.removeItem('token');
         setUser(null);
       }
     }
-    setLoading(false);  // mark loading as false after checking token
+    setLoading(false);
   }, []);
 
   const login = async (email: string, password: string): Promise<User> => {
@@ -50,8 +52,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!res.ok) throw new Error('Login failed');
     const data = await res.json();
+    console.log('Login response:', data); // 调试信息
     const loggedInUser: User = {
-      _id: data.user.id || data.user._id,  // make sure to use the correct field
+      _id: data.user.id,
       email: data.user.email,
       name: data.user.name,
       role: data.user.role,
@@ -70,10 +73,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (!res.ok) throw new Error('Registration failed');
     const data = await res.json();
     const registeredUser: User = {
-      _id: data.user.id || data.user._id,
-      email,
-      name,
-      role: 'USER',
+      _id: data.user.id,
+      email: data.user.email,
+      name: data.user.name,
+      role: data.user.role,
     };
     localStorage.setItem('token', data.access_token);
     setUser(registeredUser);

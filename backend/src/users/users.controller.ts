@@ -9,18 +9,27 @@ export class UsersController {
   constructor(private readonly usersService: UsersService) {}
 
   private isAdmin(req: any): boolean {
+    console.log('Checking admin role:', req.user);
     return req.user && req.user.role === 'ADMIN';
   }
 
   @Get()
   async findAll(@Req() req): Promise<User[]> {
-    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
-    return this.usersService.findAll();
+    console.log('Fetching all users, user:', req.user);
+    if (!this.isAdmin(req)) {
+      console.log('Access denied: Not an admin');
+      throw new ForbiddenException('Access denied: Admins only');
+    }
+    const users = await this.usersService.findAll();
+    console.log('Found users:', users.length);
+    return users;
   }
 
   @Get(':id')
   async findOne(@Param('id') id: string, @Req() req): Promise<User> {
-    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
+    if (!this.isAdmin(req)) {
+      throw new ForbiddenException('Access denied: Admins only');
+    }
     const user = await this.usersService.findById(id);
     if (!user) throw new NotFoundException('User not found');
     return user;
@@ -28,7 +37,9 @@ export class UsersController {
 
   @Delete(':id')
   async delete(@Param('id') id: string, @Req() req): Promise<{ deleted: boolean }> {
-    if (!this.isAdmin(req)) throw new ForbiddenException('Access denied: Admins only');
+    if (!this.isAdmin(req)) {
+      throw new ForbiddenException('Access denied: Admins only');
+    }
     const result = await this.usersService.delete(id);
     if (!result) throw new NotFoundException('User not found');
     return { deleted: true };

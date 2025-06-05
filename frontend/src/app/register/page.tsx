@@ -10,16 +10,22 @@ export default function Register() {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const { register } = useAuth();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setError("");
+    setIsLoading(true);
+
     try {
       await register(name, email, password);
       router.push("/dashboard");
-    } catch {
-      setError("Registration failed. Please try again.");
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Registration failed. Please try again.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -83,10 +89,11 @@ export default function Register() {
                 />
               </div>
               <button
-                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
+                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700 disabled:bg-blue-400"
                 type="submit"
+                disabled={isLoading}
               >
-                Register
+                {isLoading ? "Registering..." : "Register"}
               </button>
             </form>
           </div>

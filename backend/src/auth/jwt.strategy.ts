@@ -20,19 +20,34 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     super({
       jwtFromRequest: ExtractJwt.fromAuthHeaderAsBearerToken(),
       ignoreExpiration: false,
-      secretOrKey: configService.get<string>('JWT_SECRET') || 'your_jwt_secret',
+      secretOrKey: configService.get<string>('JWT_SECRET', 'your_jwt_secret'),
+      passReqToCallback: true,
+      algorithms: ['HS256']
     });
   }
 
-  async validate(payload: JwtPayload) {
-    const user = await this.usersService.findByEmail(payload.email);
-    if (!user) {
+  async validate(req: any, payload: JwtPayload) {
+    console.log('Validating token payload:', payload);
+    try {
+      const user = await this.usersService.findByEmail(payload.email);
+      if (!user) {
+        console.log('User not found:', payload.email);
+        throw new UnauthorizedException('Invalid token');
+      }
+      console.log('User found:', {
+        id: user._id,
+        email: user.email,
+        role: user.role
+      });
+      return {
+        id: user._id,
+        email: user.email,
+        name: user.name,
+        role: user.role as 'ADMIN' | 'USER',
+      };
+    } catch (error) {
+      console.error('Token validation error:', error);
       throw new UnauthorizedException('Invalid token');
     }
-    return {
-      userId: user._id.toString(),
-      email: user.email,
-      role: user.role,
-    };
   }
 }
