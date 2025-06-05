@@ -1,28 +1,29 @@
 "use client";
 
-import Link from "next/link";
-import { useAuth } from "../contexts/AuthContext";
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import { useAuth } from "../../contexts/AuthContext";
+import Link from "next/link";
 
-export default function Home() {
+export default function AdminLogin() {
+  const { login } = useAuth();
+  const router = useRouter();
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
-  const { login, user } = useAuth(); // <-- get user here
-  const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError("");
     setLoading(true);
     try {
-      await login(email, password);
-      if (user && user.role === "ADMIN") {
-        router.push("/admin");
+      const user = await login(email, password); // returns user object
+      if (user.role === "ADMIN") {
+        router.push("/admin"); // to admin dashboard
       } else {
-        router.push("/dashboard");
+        setError("You do not have admin access."); // 
       }
     } catch {
       setError("Invalid email or password");
@@ -35,13 +36,13 @@ export default function Home() {
     <div className="flex min-h-screen flex-col items-center justify-center bg-gray-50 p-4">
       <div className="w-full max-w-md">
         <div className="mb-10 text-center">
-          <h1 className="text-4xl font-bold text-blue-600">SPEED</h1>
+          <h1 className="text-4xl font-bold text-blue-600">Admin Login</h1>
           <p className="mt-2 text-gray-600">Software Practice Empirical Evidence Database</p>
         </div>
 
         <div className="overflow-hidden rounded-lg bg-white shadow-lg">
           <div className="px-6 py-8">
-            <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800">Login</h2>
+            <h2 className="mb-6 text-center text-2xl font-semibold text-gray-800">Login as Admin</h2>
             {error && (
               <div className="mb-4 rounded-md bg-red-50 p-4 text-sm text-red-700">
                 {error}
@@ -49,48 +50,46 @@ export default function Home() {
             )}
             <form onSubmit={handleSubmit}>
               <div className="mb-4">
-                <label className="mb-2 block text-sm font-medium text-gray-700" htmlFor="email">Email</label>
+                <label htmlFor="email" className="mb-2 block text-sm font-medium text-gray-700">
+                  Email
+                </label>
                 <input
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                   id="email"
                   type="email"
+                  required
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter your email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter your email"
-                  required
                 />
               </div>
               <div className="mb-6">
-                <label className="mb-2 block text-sm font-medium text-gray-700" htmlFor="password">Password</label>
+                <label htmlFor="password" className="mb-2 block text-sm font-medium text-gray-700">
+                  Password
+                </label>
                 <input
-                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
                   id="password"
                   type="password"
+                  required
+                  className="w-full rounded-md border border-gray-300 px-3 py-2 focus:border-blue-500 focus:outline-none"
+                  placeholder="Enter your password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  placeholder="Enter your password"
-                  required
                 />
               </div>
               <button
-                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
                 type="submit"
                 disabled={loading}
+                className="w-full rounded-md bg-blue-600 px-4 py-2 text-white transition-colors hover:bg-blue-700"
               >
                 {loading ? "Logging in..." : "Login"}
               </button>
             </form>
           </div>
-          <div className="border-t bg-gray-50 px-6 py-4">
-            <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Don&apos;t have an account?</span>
-              <Link href="/register" className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Register
-              </Link>
-              <Link href="/admin-login" className="text-sm font-medium text-blue-600 hover:text-blue-800">
-                Admin Login
-              </Link>
-            </div>
+          <div className="border-t bg-gray-50 px-6 py-4 text-center">
+            <Link href="/" className="text-sm font-medium text-blue-600 hover:text-blue-800">
+              Back to Home
+            </Link>
           </div>
         </div>
 

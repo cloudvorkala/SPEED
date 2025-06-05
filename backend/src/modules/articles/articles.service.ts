@@ -7,7 +7,7 @@ import { Article } from '../../models/article.model';
 export class ArticlesService {
   constructor(
     @InjectModel(Article.name) private articleModel: Model<Article>,
-  ) {}
+  ) { }
 
   async findAll(filters?: { author?: string }): Promise<Article[]> {
     const query = filters?.author
@@ -65,4 +65,10 @@ export class ArticlesService {
       )
       .exec();
   }
+
+  async delete(id: string): Promise<boolean> {
+    const result = await this.articleModel.deleteOne({ _id: id });
+    return result.deletedCount > 0;
+  }
+
 }
