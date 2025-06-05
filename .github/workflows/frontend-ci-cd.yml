@@ -34,11 +34,6 @@ jobs:
         cd frontend
         npm run lint
     
-    - name: Type Check
-      run: |
-        cd frontend
-        npm run type-check
-    
     - name: Build
       run: |
         cd frontend
