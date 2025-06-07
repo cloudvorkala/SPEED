@@ -131,6 +131,15 @@ export default function AnalysisResults() {
 
   const renderCellContent = (article: Article, columnId: string) => {
     switch (columnId) {
+      case 'title':
+        return (
+          <Link
+            href={`/dashboard/articles/${article._id}`}
+            className="text-blue-600 hover:text-blue-800 hover:underline"
+          >
+            {article.title}
+          </Link>
+        );
       case 'authors':
         return article.authors.join(', ');
       case 'researchType':
