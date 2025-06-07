@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { ArticleStatus } from '../modules/articles/dto/create-article.dto';
 
 export type ArticleDocument = Article & Document;
 
@@ -29,8 +30,8 @@ export class Article {
   @Prop()
   doi?: string;
 
-  @Prop({ required: true, enum: ['PENDING', 'APPROVED', 'REJECTED', 'READY_FOR_ANALYSIS', 'ANALYZED'], default: 'PENDING' })
-  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'READY_FOR_ANALYSIS' | 'ANALYZED';
+  @Prop({ type: String, enum: ArticleStatus, default: ArticleStatus.PENDING })
+  status: ArticleStatus;
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   moderatedBy?: Types.ObjectId;
@@ -75,6 +76,15 @@ export class Article {
     recommendations: string;
     notes: string;
   };
+
+  @Prop()
+  researchType?: string;
+
+  @Prop()
+  participantType?: string;
+
+  @Prop()
+  findings?: string;
 
   _id: Types.ObjectId;
 }

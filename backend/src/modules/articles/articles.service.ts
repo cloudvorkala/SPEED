@@ -200,4 +200,21 @@ export class ArticlesService {
     const result = await this.articleModel.deleteOne({ _id: id }).exec();
     return result.deletedCount > 0;
   }
+
+  async findAnalyzed() {
+    try {
+      const articles = await this.articleModel.find({
+        status: 'ANALYZED',
+        analysisResult: { $exists: true }
+      }).sort({ analyzedAt: -1 }).exec();
+
+      if (!articles) {
+        return [];
+      }
+
+      return articles;
+    } catch (error) {
+      throw new Error('查询已分析文章失败');
+    }
+  }
 }

@@ -4,6 +4,7 @@ import { Model, Types } from 'mongoose';
 import { Article } from '../../models/article.model';
 import { User } from '../../models/user.model';
 import { AnalysisDataDto } from './dto/analysis.dto';
+import { ArticleStatus } from '../articles/dto/create-article.dto';
 
 @Injectable()
 export class AnalysisService {
@@ -19,7 +20,7 @@ export class AnalysisService {
     }
 
     return this.articleModel.find({
-      status: 'READY_FOR_ANALYSIS',
+      status: ArticleStatus.READY_FOR_ANALYSIS,
       analyzedBy: { $ne: new Types.ObjectId(userId) }
     }).sort({ createdAt: -1 });
   }
@@ -45,7 +46,7 @@ export class AnalysisService {
       throw new NotFoundException('Article not found');
     }
 
-    if (article.status !== 'READY_FOR_ANALYSIS') {
+    if (article.status !== ArticleStatus.READY_FOR_ANALYSIS) {
       throw new ForbiddenException('Article is not ready for analysis');
     }
 
@@ -62,7 +63,7 @@ export class AnalysisService {
     article.analyzedBy = new Types.ObjectId(userId);
     article.analyzedAt = new Date();
     article.analysisResult = analysisResult;
-    article.status = 'ANALYZED';
+    article.status = ArticleStatus.ANALYZED;
 
     return article.save();
   }

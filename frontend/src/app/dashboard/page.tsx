@@ -115,6 +115,12 @@ export default function Dashboard() {
                 >
                   Submit Article
                 </Link>
+                <Link
+                  href="/dashboard/analysis-results"
+                  className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
+                >
+                  Analysis Results
+                </Link>
                 {user?.isModerator && (
                   <Link
                     href="/dashboard/moderation"
@@ -142,6 +148,48 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Welcome to SPEED</h1>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Analysis Results - Available to all users */}
+          <Link
+            href="/dashboard/analysis-results"
+            className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Analysis Results</h2>
+            <p className="text-gray-600">View all analyzed articles and their results</p>
+          </Link>
+
+          {/* Analysis - Only for analysts */}
+          {user?.isAnalyst && (
+            <Link
+              href="/dashboard/analysis"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Analysis</h2>
+              <p className="text-gray-600">Analyze articles ready for review</p>
+            </Link>
+          )}
+
+          {/* Moderation - Only for moderators and admins */}
+          {(user?.isModerator || user?.isAdmin) && (
+            <Link
+              href="/dashboard/moderation"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Moderation</h2>
+              <p className="text-gray-600">Review and moderate submitted articles</p>
+            </Link>
+          )}
+
+          {/* Admin Panel - Only for admins */}
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Admin Panel</h2>
+              <p className="text-gray-600">Manage users and system settings</p>
+            </Link>
+          )}
+
           {/* Practices card */}
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -152,7 +200,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-gray-50 px-4 py-4 sm:px-6">
               <Link href="/dashboard/practices" className="text-sm text-blue-600 hover:text-blue-800">
-                Browse practices →
+                View Practices →
               </Link>
             </div>
           </div>
@@ -186,23 +234,6 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
-
-          {/* Analysis card - only visible for analysts */}
-          {user?.isAnalyst && (
-            <div className="bg-white overflow-hidden shadow rounded-lg">
-              <div className="px-4 py-5 sm:p-6">
-                <h2 className="text-lg font-medium text-gray-900">Analysis</h2>
-                <p className="mt-1 text-sm text-gray-500">
-                  Analyze articles and provide feedback.
-                </p>
-              </div>
-              <div className="bg-gray-50 px-4 py-4 sm:px-6">
-                <Link href="/dashboard/analysis" className="text-sm text-blue-600 hover:text-blue-800">
-                  Go to Analysis →
-                </Link>
-              </div>
-            </div>
-          )}
         </div>
 
         {/* Latest articles */}

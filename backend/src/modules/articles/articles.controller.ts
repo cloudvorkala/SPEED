@@ -1,26 +1,49 @@
-import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException, UseGuards, Request } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException, UseGuards, Request, HttpException, HttpStatus } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from '../../models/article.model';
 import { Delete } from '@nestjs/common';
 import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
 import { RolesGuard } from '../../auth/roles.guard';
 import { Roles } from '../../auth/roles.decorator';
+import { CreateArticleDto } from './dto/create-article.dto';
 
 @Controller('articles')
-@UseGuards(JwtAuthGuard, RolesGuard)
+@UseGuards(JwtAuthGuard)
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) { }
 
+  @Post()
+  @UseGuards(JwtAuthGuard, RolesGuard)
+  @Roles('admin', 'moderator')
+  async create(@Body() createArticleDto: CreateArticleDto) {
+    return this.articlesService.create(createArticleDto);
+  }
+
   @Get()
-  async findAll(@Query() query: {
-    author?: string;
-    title?: string;
-    journal?: string;
-    year?: string;
-    status?: string;
-  }): Promise<Article[]> {
-    console.log('Controller received query:', query);
+  async findAll(@Query() query: any) {
     return this.articlesService.findAll(query);
+  }
+
+  @Get('analyzed')
+  async getAnalyzedArticles() {
+    try {
+      const articles = await this.articlesService.findAnalyzed();
+      return articles;
+    } catch (error) {
+      throw new HttpException(
+        'Failed to fetch analyzed articles',
+        HttpStatus.INTERNAL_SERVER_ERROR
+      );
+    }
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const article = await this.articlesService.findOne(id);
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    return article;
   }
 
   @Get('admin/all')
@@ -49,18 +72,6 @@ export class ArticlesController {
     }
     const count = await this.articlesService.getPendingCount();
     return { count };
-  }
-
-  @Get(':id')
-  async findOne(@Param('id') id: string): Promise<Article> {
-    const article = await this.articlesService.findOne(id);
-    if (!article) throw new NotFoundException('Article not found');
-    return article;
-  }
-
-  @Post()
-  async create(@Body() article: Partial<Article>): Promise<Article> {
-    return this.articlesService.create(article);
   }
 
   @Put(':id')

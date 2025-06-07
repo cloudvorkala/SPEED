@@ -3,6 +3,7 @@ import { API_ENDPOINTS } from '../config/api';
 
 export interface User {
   _id: string;
+  username: string;
   email: string;
   name: string;
   role: string;
@@ -35,6 +36,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         console.log('Parsed user data from localStorage:', userData);
         const validatedUser: User = {
           _id: userData._id || userData.id,
+          username: userData.username,
           email: userData.email,
           name: userData.name,
           role: userData.role,
@@ -65,6 +67,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('Login response data:', data);
     const loggedInUser: User = {
       _id: data.user.id || data.user._id,
+      username: data.user.username,
       email: data.user.email,
       name: data.user.name,
       role: data.user.role,
@@ -90,6 +93,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     console.log('Register response data:', data);
     const registeredUser: User = {
       _id: data.user.id || data.user._id,
+      username: data.user.username,
       email: data.user.email,
       name: data.user.name,
       role: data.user.role,
