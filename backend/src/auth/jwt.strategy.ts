@@ -9,6 +9,8 @@ interface JwtPayload {
   sub: string;
   email: string;
   role?: string;
+  isAdmin?: boolean;
+  isModerator?: boolean;
 }
 
 @Injectable()
@@ -27,23 +29,18 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(req: any, payload: JwtPayload) {
-    console.log('Validating token payload:', payload);
     try {
       const user = await this.usersService.findByEmail(payload.email);
       if (!user) {
-        console.log('User not found:', payload.email);
         throw new UnauthorizedException('Invalid token');
       }
-      console.log('User found:', {
-        id: user._id,
-        email: user.email,
-        role: user.role
-      });
       return {
         id: user._id,
         email: user.email,
         name: user.name,
         role: user.role as 'ADMIN' | 'USER',
+        isAdmin: user.isAdmin,
+        isModerator: user.isModerator
       };
     } catch (error) {
       console.error('Token validation error:', error);

@@ -1,4 +1,5 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { API_ENDPOINTS } from '@/config/api';
 
 // Handle GET requests to fetch admin configuration
 export async function GET(req: NextRequest) {
@@ -7,7 +8,7 @@ export async function GET(req: NextRequest) {
     const token = req.headers.get('authorization')?.split(' ')[1];
 
     // Send request to the backend API to fetch admin configuration
-    const response = await fetch(`${process.env.API_URL}/admin/config`, {
+    const response = await fetch(`${API_ENDPOINTS.ADMIN}/config`, {
       headers: {
         'Authorization': `Bearer ${token}` // Send token in Authorization header
       }
@@ -41,7 +42,7 @@ export async function PUT(req: NextRequest) {
     const token = req.headers.get('authorization')?.split(' ')[1];
 
     // Send PUT request to backend API to update the configuration
-    const response = await fetch(`${process.env.API_URL}/admin/config`, {
+    const response = await fetch(`${API_ENDPOINTS.ADMIN}/config`, {
       method: 'PUT',
       headers: {
         'Content-Type': 'application/json',

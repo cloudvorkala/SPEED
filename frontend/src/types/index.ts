@@ -3,6 +3,7 @@ export interface User {
   name: string;
   email: string;
   role: string;
+  isModerator: boolean;
 }
 
 export interface Article {

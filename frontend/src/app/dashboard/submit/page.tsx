@@ -108,6 +108,13 @@ export default function SubmitArticle() {
   // Handle submission of all valid, unsubmitted forms
   const handleSubmitAll = async () => {
     const submittedIds: string[] = [];
+    const token = localStorage.getItem('token');
+
+    if (!token) {
+      alert('Please log in to submit articles');
+      router.push('/login');
+      return;
+    }
 
     for (let i = 0; i < formList.length; i++) {
       if (!isFormValid(formList[i]) || submittedForms.includes(i)) continue;
@@ -116,7 +123,10 @@ export default function SubmitArticle() {
         const filteredAuthors = formList[i].authors.filter((a) => a.trim() !== "");
         const response = await fetch("http://localhost:4000/articles", {
           method: "POST",
-          headers: { "Content-Type": "application/json" },
+          headers: {
+            "Content-Type": "application/json",
+            "Authorization": `Bearer ${token}`
+          },
           body: JSON.stringify({ ...formList[i], authors: filteredAuthors }),
         });
 

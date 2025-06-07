@@ -1,18 +1,54 @@
-import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException } from '@nestjs/common';
+import { Body, Controller, Get, Param, Post, Put, Query, NotFoundException, UseGuards, Request } from '@nestjs/common';
 import { ArticlesService } from './articles.service';
 import { Article } from '../../models/article.model';
 import { Delete } from '@nestjs/common';
+import { JwtAuthGuard } from '../../auth/jwt-auth.guard';
+import { RolesGuard } from '../../auth/roles.guard';
+import { Roles } from '../../auth/roles.decorator';
 
 @Controller('articles')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class ArticlesController {
   constructor(private readonly articlesService: ArticlesService) { }
 
   @Get()
-  async findAll(
-    @Query('author') author?: string,
-  ): Promise<Article[]> {
-    // only uploaded articles are returned
-    return this.articlesService.findAll({ author });
+  async findAll(@Query() query: {
+    author?: string;
+    title?: string;
+    journal?: string;
+    year?: string;
+    status?: string;
+  }): Promise<Article[]> {
+    console.log('Controller received query:', query);
+    return this.articlesService.findAll(query);
+  }
+
+  @Get('admin/all')
+  @Roles('ADMIN')
+  async findAllForAdmin(@Request() req): Promise<Article[]> {
+    if (!req.user.isAdmin) {
+      throw new NotFoundException('Access denied');
+    }
+    return this.articlesService.findAllForAdmin();
+  }
+
+  @Get('pending')
+  @Roles('MODERATOR')
+  async findPending(@Request() req): Promise<Article[]> {
+    if (!req.user.isModerator) {
+      throw new NotFoundException('Access denied');
+    }
+    return this.articlesService.findPending();
+  }
+
+  @Get('pending/count')
+  @Roles('MODERATOR')
+  async getPendingCount(@Request() req): Promise<{ count: number }> {
+    if (!req.user.isModerator) {
+      throw new NotFoundException('Access denied');
+    }
+    const count = await this.articlesService.getPendingCount();
+    return { count };
   }
 
   @Get(':id')
@@ -37,22 +73,44 @@ export class ArticlesController {
     return updated;
   }
 
-  @Put(':id/moderate')
-  async moderate(
+  @Put(':id/status')
+  @Roles('ADMIN')
+  async updateStatus(
+    @Request() req,
     @Param('id') id: string,
-    @Body()
-    moderationData: {
-      status: 'APPROVED' | 'REJECTED';
-      moderatorId: string;
-    },
+    @Body() data: { status: 'APPROVED' | 'REJECTED' },
   ): Promise<Article> {
-    const moderated = await this.articlesService.moderate(
+    if (!req.user.isAdmin) {
+      throw new NotFoundException('Access denied');
+    }
+    const updated = await this.articlesService.updateStatus(id, data.status);
+    if (!updated) throw new NotFoundException('Article not found');
+    return updated;
+  }
+
+  @Post(':id/moderate')
+  @Roles('MODERATOR')
+  async moderate(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() moderationData: {
+      status: 'APPROVED' | 'REJECTED';
+      isPeerReviewed: boolean;
+      isRelevantToSE: boolean;
+      isDuplicateChecked: boolean;
+      duplicateCheckResult?: string;
+      rejectionReason?: string;
+    },
+  ): Promise<Article | null> {
+    if (!req.user.isModerator) {
+      throw new NotFoundException('Access denied');
+    }
+    return this.articlesService.moderate(
       id,
       moderationData.status,
-      moderationData.moderatorId,
+      req.user._id,
+      moderationData,
     );
-    if (!moderated) throw new NotFoundException('Article not found');
-    return moderated;
   }
 
   @Put(':id/rate')
@@ -66,7 +124,11 @@ export class ArticlesController {
   }
 
   @Delete(':id')
-  async delete(@Param('id') id: string): Promise<{ deleted: boolean }> {
+  @Roles('ADMIN')
+  async delete(@Request() req, @Param('id') id: string): Promise<{ deleted: boolean }> {
+    if (!req.user.isAdmin) {
+      throw new NotFoundException('Access denied');
+    }
     const deleted = await this.articlesService.delete(id);
     if (!deleted) throw new NotFoundException('Article not found');
     return { deleted: true };

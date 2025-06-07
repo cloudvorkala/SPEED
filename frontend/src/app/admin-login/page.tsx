@@ -23,7 +23,7 @@ export default function AdminLogin() {
 
     try {
       const user = await login(email, password); // Attempt login, returns user object
-      if (user.role === "ADMIN") {
+      if (user.isAdmin) {
         router.push("/admin"); // Redirect if user is an admin
       } else {
         setError("You do not have admin access."); // Show access error

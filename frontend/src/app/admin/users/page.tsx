@@ -5,6 +5,7 @@ import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import { User } from "../../../types";
+import { API_ENDPOINTS } from "../../../config/api";
 
 // Type for user data returned from API
 interface ApiUser {
@@ -13,6 +14,7 @@ interface ApiUser {
   email: string;
   name: string;
   role: string;
+  isModerator: boolean;
 }
 
 export default function AdminUsers() {
@@ -21,22 +23,21 @@ export default function AdminUsers() {
   const [users, setUsers] = useState<User[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
-  const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
   // Redirect if not authenticated or not an admin
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
         router.replace("/");
-      } else if (user.role !== "ADMIN") {
-        router.replace("/dashboard");
+      } else if (!user.isAdmin) {
+        router.replace("/admin");
       }
     }
   }, [authLoading, user, router]);
 
   // Fetch user list from API
   useEffect(() => {
-    if (user?.role === "ADMIN") {
+    if (user?.isAdmin) {
       const fetchUsers = async () => {
         const token = localStorage.getItem('token');
         if (!token) {
@@ -46,7 +47,7 @@ export default function AdminUsers() {
         }
 
         try {
-          const res = await fetch(`${API_URL}/users`, {
+          const res = await fetch(API_ENDPOINTS.USERS, {
             headers: {
               'Authorization': `Bearer ${token}`,
               'Accept': 'application/json',
@@ -64,7 +65,7 @@ export default function AdminUsers() {
 
           if (res.status === 403) {
             setError("You don't have permission to access this page.");
-            router.replace("/dashboard");
+            router.replace("/admin");
             return;
           }
 
@@ -96,7 +97,7 @@ export default function AdminUsers() {
 
     const token = localStorage.getItem('token');
     try {
-      const res = await fetch(`${API_URL}/users/${id}`, {
+      const res = await fetch(`${API_ENDPOINTS.USERS}/${id}`, {
         method: "DELETE",
         headers: {
           'Authorization': `Bearer ${token}`,
@@ -117,9 +118,37 @@ export default function AdminUsers() {
     }
   };
 
+  // Handle toggling moderator status
+  const handleToggleModerator = async (id: string, currentStatus: boolean) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_ENDPOINTS.USERS}/${id}/moderator`, {
+        method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isModerator: !currentStatus }),
+      });
+
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+      }
+
+      // Update user in UI list
+      setUsers(users.map(u =>
+        u._id === id ? { ...u, isModerator: !currentStatus } : u
+      ));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update moderator status");
+    }
+  };
+
   // Display loading or access restriction messages
   if (authLoading || loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!user || user.role !== "ADMIN") return <div className="p-8 text-center">Access denied.</div>;
+  if (!user || !user.isAdmin) return <div className="p-8 text-center">Access denied.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -151,6 +180,7 @@ export default function AdminUsers() {
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">Name</th>
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">Email</th>
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">Role</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">Moderator</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -161,6 +191,18 @@ export default function AdminUsers() {
                     <td className="px-6 py-4">{u.name}</td>
                     <td className="px-6 py-4">{u.email}</td>
                     <td className="px-6 py-4">{u.role}</td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleToggleModerator(u._id, u.isModerator)}
+                        className={`px-3 py-1 rounded text-xs ${
+                          u.isModerator
+                            ? 'bg-green-600 text-white hover:bg-green-700'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {u.isModerator ? 'Yes' : 'No'}
+                      </button>
+                    </td>
                     <td className="px-6 py-4 text-center">
                       <button
                         onClick={() => handleDelete(u._id)}
