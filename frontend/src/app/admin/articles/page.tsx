@@ -12,7 +12,7 @@ interface Article {
   title: string;
   authors: string[];
   year: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "READY_FOR_ANALYSIS";
 }
 
 export default function AdminArticles() {
@@ -98,6 +98,9 @@ export default function AdminArticles() {
         : `${API_ENDPOINTS.ARTICLES}/${id}`;
       const method = status ? "PUT" : "DELETE";
 
+      // If approving, set status to READY_FOR_ANALYSIS
+      const statusToSend = status === "APPROVED" ? "READY_FOR_ANALYSIS" : status;
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -105,7 +108,7 @@ export default function AdminArticles() {
           "Authorization": `Bearer ${token}`,
           "Accept": "application/json"
         },
-        body: status ? JSON.stringify({ status }) : undefined,
+        body: status ? JSON.stringify({ status: statusToSend }) : undefined,
       });
 
       if (res.status === 401) {
@@ -126,7 +129,7 @@ export default function AdminArticles() {
 
       // Update UI after action
       if (status) {
-        setArticles(prev => prev.map(a => a._id === id ? { ...a, status } : a));
+        setArticles(prev => prev.map(a => a._id === id ? { ...a, status: statusToSend as Article['status'] } : a));
       } else {
         setArticles(prev => prev.filter(a => a._id !== id));
       }
@@ -179,7 +182,7 @@ export default function AdminArticles() {
                     <td className="px-6 py-4">{a.year}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
-                        a.status === "APPROVED" ? "bg-green-100 text-green-800" :
+                        a.status === "READY_FOR_ANALYSIS" ? "bg-green-100 text-green-800" :
                         a.status === "REJECTED" ? "bg-red-100 text-red-800" :
                         "bg-yellow-100 text-yellow-800"
                       }`}>
@@ -199,16 +202,15 @@ export default function AdminArticles() {
                             </button>
                             <button
                               onClick={() => handleAction(a._id, "REJECTED")}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs transition"
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
                             >
                               Reject
                             </button>
                           </>
                         )}
-                        {/* Delete available for all statuses */}
                         <button
                           onClick={() => handleAction(a._id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition"
                         >
                           Delete
                         </button>

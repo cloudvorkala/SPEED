@@ -14,7 +14,7 @@ interface Article {
   journal: string;
   year: number;
   doi: string;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "READY_FOR_ANALYSIS";
   isPeerReviewed: boolean;
   isRelevantToSE: boolean;
   isDuplicateChecked: boolean;
