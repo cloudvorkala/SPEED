@@ -1,5 +1,5 @@
 // API configuration
-export const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
+const API_URL = process.env.NEXT_PUBLIC_API_URL || 'http://localhost:4000';
 
 // API endpoints
 export const API_ENDPOINTS = {
@@ -9,5 +9,6 @@ export const API_ENDPOINTS = {
   RATINGS: `${API_URL}/ratings`,
   MODERATION: `${API_URL}/moderation`,
   PRACTICES: `${API_URL}/practices`,
-  ADMIN: `${API_URL}/admin`
+  ADMIN: `${API_URL}/admin`,
+  ANALYSIS: `${API_URL}/analysis`,
 } as const;

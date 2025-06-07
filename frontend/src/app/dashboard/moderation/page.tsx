@@ -105,6 +105,20 @@ export default function ModerationPage() {
         return;
       }
 
+      // Only send necessary moderation data
+      const requestData = {
+        status,
+        isPeerReviewed: moderationData.isPeerReviewed,
+        isRelevantToSE: moderationData.isRelevantToSE,
+        isDuplicateChecked: moderationData.isDuplicateChecked,
+        ...(moderationData.rejectionReason && { rejectionReason: moderationData.rejectionReason })
+      };
+
+      console.log('Sending moderation request:', {
+        articleId,
+        requestData
+      });
+
       const response = await fetch(`${API_ENDPOINTS.ARTICLES}/${articleId}/moderate`, {
         method: "POST",
         headers: {
@@ -112,19 +126,74 @@ export default function ModerationPage() {
           'Accept': 'application/json',
           'Content-Type': 'application/json'
         },
-        body: JSON.stringify({
-          status,
-          ...moderationData,
-        }),
+        body: JSON.stringify(requestData),
       });
 
       if (!response.ok) {
-        throw new Error('Failed to moderate article');
+        const errorData = await response.json().catch(() => null);
+        throw new Error(errorData?.message || 'Failed to moderate article');
       }
 
+      const result = await response.json();
+      console.log('Moderation result:', result);
+
+      // Update local state
+      setArticles(prevArticles =>
+        prevArticles.filter(article => article._id !== articleId)
+      );
+      setPendingCount(prevCount => Math.max(0, prevCount - 1));
+
+      // Show success message
+      alert(status === 'APPROVED' ? 'Article approved successfully' : 'Article rejected successfully');
+
+      // Immediately fetch updated articles to ensure consistency
       await fetchPendingArticles();
     } catch (error) {
       console.error("Error moderating article:", error);
+      alert(error instanceof Error ? error.message : 'Failed to moderate article');
+    }
+  };
+
+  const updateArticleLocalState = (articleId: string, updates: Partial<Article>) => {
+    setArticles(prevArticles =>
+      prevArticles.map(article =>
+        article._id === articleId
+          ? { ...article, ...updates }
+          : article
+      )
+    );
+  };
+
+  const updateArticleCheckbox = async (articleId: string, field: keyof Article, value: boolean) => {
+    try {
+      const token = localStorage.getItem('token');
+      if (!token) {
+        console.error("No authentication token found");
+        return;
+      }
+
+      // Update local state immediately for better UX
+      updateArticleLocalState(articleId, { [field]: value });
+
+      // Send update to server
+      const response = await fetch(`${API_ENDPOINTS.ARTICLES}/${articleId}/update`, {
+        method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ [field]: value }),
+      });
+
+      if (!response.ok) {
+        // If server update fails, revert local state
+        updateArticleLocalState(articleId, { [field]: !value });
+        throw new Error('Failed to update article');
+      }
+    } catch (error) {
+      console.error("Error updating article:", error);
+      alert('Failed to update article. Please try again.');
     }
   };
 
@@ -234,10 +303,7 @@ export default function ModerationPage() {
                       className="form-checkbox"
                       checked={article.isPeerReviewed}
                       onChange={(e) =>
-                        handleModeration(article._id, article.status as "APPROVED" | "REJECTED", {
-                          ...article,
-                          isPeerReviewed: e.target.checked,
-                        })
+                        updateArticleCheckbox(article._id, 'isPeerReviewed', e.target.checked)
                       }
                     />
                     <span className="ml-2">Peer Reviewed</span>
@@ -249,10 +315,7 @@ export default function ModerationPage() {
                       className="form-checkbox"
                       checked={article.isRelevantToSE}
                       onChange={(e) =>
-                        handleModeration(article._id, article.status as "APPROVED" | "REJECTED", {
-                          ...article,
-                          isRelevantToSE: e.target.checked,
-                        })
+                        updateArticleCheckbox(article._id, 'isRelevantToSE', e.target.checked)
                       }
                     />
                     <span className="ml-2">Relevant to SE</span>
@@ -264,10 +327,7 @@ export default function ModerationPage() {
                       className="form-checkbox"
                       checked={article.isDuplicateChecked}
                       onChange={(e) =>
-                        handleModeration(article._id, article.status as "APPROVED" | "REJECTED", {
-                          ...article,
-                          isDuplicateChecked: e.target.checked,
-                        })
+                        updateArticleCheckbox(article._id, 'isDuplicateChecked', e.target.checked)
                       }
                     />
                     <span className="ml-2">Duplicate Checked</span>
@@ -278,7 +338,9 @@ export default function ModerationPage() {
                   <button
                     onClick={() =>
                       handleModeration(article._id, "APPROVED", {
-                        ...article,
+                        isPeerReviewed: article.isPeerReviewed,
+                        isRelevantToSE: article.isRelevantToSE,
+                        isDuplicateChecked: article.isDuplicateChecked,
                       })
                     }
                     className="bg-green-500 text-white px-4 py-2 rounded hover:bg-green-600"
@@ -288,7 +350,9 @@ export default function ModerationPage() {
                   <button
                     onClick={() =>
                       handleModeration(article._id, "REJECTED", {
-                        ...article,
+                        isPeerReviewed: article.isPeerReviewed,
+                        isRelevantToSE: article.isRelevantToSE,
+                        isDuplicateChecked: article.isDuplicateChecked,
                       })
                     }
                     className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600"
@@ -305,9 +369,8 @@ export default function ModerationPage() {
                     <textarea
                       value={article.rejectionReason || ""}
                       onChange={(e) =>
-                        handleModeration(article._id, article.status as "APPROVED" | "REJECTED", {
-                          ...article,
-                          rejectionReason: e.target.value,
+                        updateArticleLocalState(article._id, {
+                          rejectionReason: e.target.value
                         })
                       }
                       className="w-full border rounded p-2"

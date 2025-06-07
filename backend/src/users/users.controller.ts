@@ -47,4 +47,17 @@ export class UsersController {
     const updatedUser = await this.usersService.update(id, { isModerator });
     return updatedUser;
   }
+
+  @Put(':id/analyst')
+  @Roles('ADMIN')
+  async toggleAnalyst(
+    @Param('id') id: string,
+    @Body('isAnalyst') isAnalyst: boolean
+  ): Promise<User> {
+    const user = await this.usersService.findById(id);
+    if (!user) throw new NotFoundException('User not found');
+
+    const updatedUser = await this.usersService.update(id, { isAnalyst });
+    return updatedUser;
+  }
 }

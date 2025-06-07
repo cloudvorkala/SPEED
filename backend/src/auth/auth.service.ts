@@ -17,7 +17,8 @@ export class AuthService {
       sub: user._id,
       role: user.role,
       isAdmin: user.isAdmin,
-      isModerator: user.isModerator
+      isModerator: user.isModerator,
+      isAnalyst: user.isAnalyst
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -28,6 +29,7 @@ export class AuthService {
         id: user._id,
         isAdmin: user.isAdmin,
         isModerator: user.isModerator,
+        isAnalyst: user.isAnalyst,
       },
     };
   }
@@ -48,7 +50,8 @@ export class AuthService {
       sub: user._id,
       role: user.role,
       isAdmin: user.isAdmin,
-      isModerator: user.isModerator
+      isModerator: user.isModerator,
+      isAnalyst: user.isAnalyst
     };
     return {
       access_token: this.jwtService.sign(payload),
@@ -59,6 +62,7 @@ export class AuthService {
         id: user._id,
         isAdmin: user.isAdmin,
         isModerator: user.isModerator,
+        isAnalyst: user.isAnalyst,
       },
     };
   }

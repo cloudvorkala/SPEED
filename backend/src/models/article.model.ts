@@ -29,14 +29,20 @@ export class Article {
   @Prop()
   doi?: string;
 
-  @Prop({ required: true, enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' })
-  status: 'PENDING' | 'APPROVED' | 'REJECTED';
+  @Prop({ required: true, enum: ['PENDING', 'APPROVED', 'REJECTED', 'READY_FOR_ANALYSIS', 'ANALYZED'], default: 'PENDING' })
+  status: 'PENDING' | 'APPROVED' | 'REJECTED' | 'READY_FOR_ANALYSIS' | 'ANALYZED';
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
   moderatedBy?: Types.ObjectId;
 
   @Prop()
   moderatedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  analyzedBy?: Types.ObjectId;
+
+  @Prop()
+  analyzedAt?: Date;
 
   @Prop({ default: false })
   isPeerReviewed: boolean;
@@ -58,6 +64,17 @@ export class Article {
 
   @Prop()
   rating?: number;
+
+  @Prop({ type: Object })
+  analysisResult?: {
+    researchType: string;
+    participantType: string;
+    methodology: string;
+    findings: string;
+    limitations: string;
+    recommendations: string;
+    notes: string;
+  };
 
   _id: Types.ObjectId;
 }

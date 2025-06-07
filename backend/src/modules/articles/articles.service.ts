@@ -160,15 +160,27 @@ export class ArticlesService {
       rejectionReason?: string;
     },
   ): Promise<Article | null> {
+    const updateData = {
+      $set: {
+        moderatedBy: moderatorId,
+        moderatedAt: new Date(),
+        ...moderationData,
+      }
+    };
+
+    // If approved, set status to READY_FOR_ANALYSIS
+    if (status === 'APPROVED') {
+      updateData.$set['status'] = 'READY_FOR_ANALYSIS';
+    } else {
+      updateData.$set['status'] = status;
+    }
+
+    console.log('Updating article with data:', updateData);
+
     return this.articleModel
       .findByIdAndUpdate(
         id,
-        {
-          status,
-          moderatedBy: moderatorId,
-          moderatedAt: new Date(),
-          ...moderationData,
-        },
+        updateData,
         { new: true },
       )
       .exec();

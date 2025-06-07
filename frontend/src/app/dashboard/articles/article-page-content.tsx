@@ -83,6 +83,10 @@ export default function SubmittedArticlesPage() {
         router.push('/');
     };
 
+    const handleArticleClick = (articleId: string) => {
+        router.push(`/dashboard/articles/${articleId}`);
+    };
+
     if (loading) return <div className="p-6">Loading...</div>;
     if (error) return <div className="p-6 text-red-600">{error}</div>;
 
@@ -120,7 +124,8 @@ export default function SubmittedArticlesPage() {
                     {articles.map((article) => (
                         <div
                             key={article._id}
-                            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow"
+                            onClick={() => handleArticleClick(article._id)}
+                            className="bg-white p-6 rounded-lg shadow hover:shadow-md transition-shadow cursor-pointer"
                         >
                             <div className="flex flex-col h-full justify-between">
                                 <div>
@@ -148,6 +153,7 @@ export default function SubmittedArticlesPage() {
                                             target="_blank"
                                             rel="noopener noreferrer"
                                             className="hover:underline"
+                                            onClick={(e) => e.stopPropagation()}
                                         >
                                             DOI: {article.doi}
                                         </a>

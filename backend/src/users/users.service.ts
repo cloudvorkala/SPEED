@@ -44,7 +44,11 @@ export class UsersService {
   async update(id: string, updateData: Partial<User>): Promise<User> {
     // If toggling moderator status, also update the role
     if (updateData.hasOwnProperty('isModerator')) {
-      updateData.role = updateData.isModerator ? 'MODERATOR' : 'USER';
+      updateData.role = updateData.isModerator ? 'moderator' : 'user';
+    }
+    // If toggling analyst status, also update the role
+    if (updateData.hasOwnProperty('isAnalyst')) {
+      updateData.role = updateData.isAnalyst ? 'analyst' : 'user';
     }
 
     const user = await this.userModel.findByIdAndUpdate(

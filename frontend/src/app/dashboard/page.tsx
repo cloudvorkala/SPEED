@@ -27,6 +27,7 @@ export default function Dashboard() {
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log('Current user in Dashboard:', user);
     if (!authLoading && !user) {
       router.replace("/");
       return;
@@ -122,6 +123,14 @@ export default function Dashboard() {
                     Moderation
                   </Link>
                 )}
+                {user?.isAnalyst && (
+                  <Link
+                    href="/dashboard/analysis"
+                    className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
+                  >
+                    Analysis
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -177,6 +186,23 @@ export default function Dashboard() {
               </Link>
             </div>
           </div>
+
+          {/* Analysis card - only visible for analysts */}
+          {user?.isAnalyst && (
+            <div className="bg-white overflow-hidden shadow rounded-lg">
+              <div className="px-4 py-5 sm:p-6">
+                <h2 className="text-lg font-medium text-gray-900">Analysis</h2>
+                <p className="mt-1 text-sm text-gray-500">
+                  Analyze articles and provide feedback.
+                </p>
+              </div>
+              <div className="bg-gray-50 px-4 py-4 sm:px-6">
+                <Link href="/dashboard/analysis" className="text-sm text-blue-600 hover:text-blue-800">
+                  Go to Analysis →
+                </Link>
+              </div>
+            </div>
+          )}
         </div>
 
         {/* Latest articles */}

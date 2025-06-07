@@ -21,6 +21,9 @@ export class User extends Document {
   @Prop({ default: false })
   isModerator: boolean;
 
+  @Prop({ default: false })
+  isAnalyst: boolean;
+
   @Prop()
   lastLogin?: Date;
 }

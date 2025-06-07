@@ -14,9 +14,11 @@ export class RolesGuard implements CanActivate {
 
     if (!user) return false;
 
-    // Check user roles
-    if (roles.includes('MODERATOR') && user.isModerator) return true;
-    if (roles.includes('ADMIN') && user.isAdmin) return true;
+    // Check user roles (case-insensitive)
+    const userRoles = roles.map(role => role.toLowerCase());
+    if (userRoles.includes('analyst') && user.isAnalyst) return true;
+    if (userRoles.includes('moderator') && user.isModerator) return true;
+    if (userRoles.includes('admin') && user.isAdmin) return true;
 
     return false;
   }

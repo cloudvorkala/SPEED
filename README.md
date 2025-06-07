@@ -1,7 +1,8 @@
 # SPEED - Software Practice Empirical Evidence Database
 
 Test account and password for admin is "admin@example.com" and  "admin123"
-User needs to register first, then Admin can make him a moderator in user management.
+User needs to register first, then Admin can make him a moderator or analyst in user management.
+New articles need to be approved by moderator then can be analyse by a analyst user.
 
 SPEED is a platform for storing and retrieving evidence related to software engineering practices. The system allows users to submit, review, analyze, and search for research evidence on the effectiveness of software engineering practices.
 

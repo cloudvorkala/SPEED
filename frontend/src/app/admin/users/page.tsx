@@ -15,6 +15,7 @@ interface ApiUser {
   name: string;
   role: string;
   isModerator: boolean;
+  isAnalyst: boolean;
 }
 
 export default function AdminUsers() {
@@ -146,6 +147,31 @@ export default function AdminUsers() {
     }
   };
 
+  // Handle toggling analyst status
+  const handleToggleAnalyst = async (id: string, currentStatus: boolean) => {
+    const token = localStorage.getItem('token');
+    try {
+      const res = await fetch(`${API_ENDPOINTS.USERS}/${id}/analyst`, {
+        method: "PUT",
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json',
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({ isAnalyst: !currentStatus }),
+      });
+      if (!res.ok) {
+        const errorData = await res.json().catch(() => ({}));
+        throw new Error(errorData.message || `HTTP error! status: ${res.status}`);
+      }
+      setUsers(users.map(u =>
+        u._id === id ? { ...u, isAnalyst: !currentStatus } : u
+      ));
+    } catch (err) {
+      alert(err instanceof Error ? err.message : "Failed to update analyst status");
+    }
+  };
+
   // Display loading or access restriction messages
   if (authLoading || loading) return <div className="p-8 text-center">Loading...</div>;
   if (!user || !user.isAdmin) return <div className="p-8 text-center">Access denied.</div>;
@@ -181,6 +207,7 @@ export default function AdminUsers() {
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">Email</th>
                   <th className="px-6 py-3 text-left text-sm font-bold text-gray-700">Role</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">Moderator</th>
+                  <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">Analyst</th>
                   <th className="px-6 py-3 text-center text-sm font-bold text-gray-700">Actions</th>
                 </tr>
               </thead>
@@ -201,6 +228,18 @@ export default function AdminUsers() {
                         }`}
                       >
                         {u.isModerator ? 'Yes' : 'No'}
+                      </button>
+                    </td>
+                    <td className="px-6 py-4 text-center">
+                      <button
+                        onClick={() => handleToggleAnalyst(u._id, u.isAnalyst)}
+                        className={`px-3 py-1 rounded text-xs ${
+                          u.isAnalyst
+                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                            : 'bg-gray-200 text-gray-700 hover:bg-gray-300'
+                        }`}
+                      >
+                        {u.isAnalyst ? 'Analyst' : 'Set Analyst'}
                       </button>
                     </td>
                     <td className="px-6 py-4 text-center">

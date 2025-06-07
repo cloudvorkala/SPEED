@@ -133,4 +133,23 @@ export class ArticlesController {
     if (!deleted) throw new NotFoundException('Article not found');
     return { deleted: true };
   }
+
+  @Put(':id/update')
+  @Roles('MODERATOR')
+  async updateArticle(
+    @Request() req,
+    @Param('id') id: string,
+    @Body() updateData: {
+      isPeerReviewed?: boolean;
+      isRelevantToSE?: boolean;
+      isDuplicateChecked?: boolean;
+    },
+  ): Promise<Article> {
+    if (!req.user.isModerator) {
+      throw new NotFoundException('Access denied');
+    }
+    const updated = await this.articlesService.update(id, updateData);
+    if (!updated) throw new NotFoundException('Article not found');
+    return updated;
+  }
 }

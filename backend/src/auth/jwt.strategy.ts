@@ -11,6 +11,7 @@ interface JwtPayload {
   role?: string;
   isAdmin?: boolean;
   isModerator?: boolean;
+  isAnalyst?: boolean;
 }
 
 @Injectable()
@@ -35,12 +36,13 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
         throw new UnauthorizedException('Invalid token');
       }
       return {
-        id: user._id,
+        _id: user._id,
         email: user.email,
         name: user.name,
-        role: user.role as 'ADMIN' | 'USER',
+        role: user.role,
         isAdmin: user.isAdmin,
-        isModerator: user.isModerator
+        isModerator: user.isModerator,
+        isAnalyst: user.isAnalyst
       };
     } catch (error) {
       console.error('Token validation error:', error);

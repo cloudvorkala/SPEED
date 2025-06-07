@@ -8,6 +8,7 @@ export interface User {
   role: string;
   isAdmin: boolean;
   isModerator: boolean;
+  isAnalyst: boolean;
 }
 
 interface AuthContextType {
@@ -31,6 +32,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     if (token && userStr) {
       try {
         const userData = JSON.parse(userStr);
+        console.log('Parsed user data from localStorage:', userData);
         const validatedUser: User = {
           _id: userData._id || userData.id,
           email: userData.email,
@@ -38,7 +40,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
           role: userData.role,
           isAdmin: userData.isAdmin || userData.role === 'ADMIN',
           isModerator: userData.isModerator || userData.role === 'MODERATOR',
+          isAnalyst: userData.isAnalyst || userData.role === 'ANALYST',
         };
+        console.log('Validated user:', validatedUser);
         setUser(validatedUser);
       } catch (err) {
         console.error('Error parsing user data:', err);
@@ -58,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!res.ok) throw new Error('Login failed');
     const data = await res.json();
+    console.log('Login response data:', data);
     const loggedInUser: User = {
       _id: data.user.id || data.user._id,
       email: data.user.email,
@@ -65,7 +70,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.user.role,
       isAdmin: data.user.isAdmin || data.user.role === 'ADMIN',
       isModerator: data.user.isModerator || data.user.role === 'MODERATOR',
+      isAnalyst: data.user.isAnalyst || data.user.role === 'ANALYST',
     };
+    console.log('Parsed logged in user:', loggedInUser);
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('user', JSON.stringify(loggedInUser));
     setUser(loggedInUser);
@@ -80,6 +87,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     });
     if (!res.ok) throw new Error('Registration failed');
     const data = await res.json();
+    console.log('Register response data:', data);
     const registeredUser: User = {
       _id: data.user.id || data.user._id,
       email: data.user.email,
@@ -87,7 +95,9 @@ export function AuthProvider({ children }: { children: ReactNode }) {
       role: data.user.role,
       isAdmin: data.user.isAdmin || data.user.role === 'ADMIN',
       isModerator: data.user.isModerator || data.user.role === 'MODERATOR',
+      isAnalyst: data.user.isAnalyst || data.user.role === 'ANALYST',
     };
+    console.log('Parsed registered user:', registeredUser);
     localStorage.setItem('token', data.access_token);
     localStorage.setItem('user', JSON.stringify(registeredUser));
     setUser(registeredUser);
