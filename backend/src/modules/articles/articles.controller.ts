@@ -37,24 +37,6 @@ export class ArticlesController {
     }
   }
 
-  @Get(':id')
-  async findOne(@Param('id') id: string) {
-    const article = await this.articlesService.findOne(id);
-    if (!article) {
-      throw new NotFoundException('Article not found');
-    }
-    return article;
-  }
-
-  @Get('admin/all')
-  @Roles('ADMIN')
-  async findAllForAdmin(@Request() req): Promise<Article[]> {
-    if (!req.user.isAdmin) {
-      throw new NotFoundException('Access denied');
-    }
-    return this.articlesService.findAllForAdmin();
-  }
-
   @Get('pending')
   @Roles('MODERATOR')
   async findPending(@Request() req): Promise<Article[]> {
@@ -72,6 +54,24 @@ export class ArticlesController {
     }
     const count = await this.articlesService.getPendingCount();
     return { count };
+  }
+
+  @Get(':id')
+  async findOne(@Param('id') id: string) {
+    const article = await this.articlesService.findOne(id);
+    if (!article) {
+      throw new NotFoundException('Article not found');
+    }
+    return article;
+  }
+
+  @Get('admin/all')
+  @Roles('ADMIN')
+  async findAllForAdmin(@Request() req): Promise<Article[]> {
+    if (!req.user.isAdmin) {
+      throw new NotFoundException('Access denied');
+    }
+    return this.articlesService.findAllForAdmin();
   }
 
   @Put(':id')

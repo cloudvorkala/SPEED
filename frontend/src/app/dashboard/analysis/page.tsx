@@ -53,17 +53,38 @@ export default function AnalysisDashboard() {
 
   return (
     <div className="p-8">
-      <h1 className="text-2xl font-bold mb-4">Analysis Dashboard</h1>
-      <p>Welcome! Here you can see articles waiting for analysis and your analysis history.</p>
-      <ul className="mt-4">
-        {articles.map(article => (
-          <li key={article._id} className="mb-2">
-            <Link href={`/dashboard/analysis/${article._id}`} className="text-blue-600 hover:underline">
-              {article.title}
-            </Link>
-          </li>
-        ))}
-      </ul>
+      <div className="mb-6 flex justify-between items-center">
+        <div>
+          <h1 className="text-2xl font-bold mb-2">Analysis Dashboard</h1>
+          <p className="text-gray-600">Welcome! Here you can see articles waiting for analysis and your analysis history.</p>
+        </div>
+        <Link
+          href="/dashboard"
+          className="px-4 py-2 bg-blue-500 text-white rounded hover:bg-blue-600 transition-colors"
+        >
+          Back to Dashboard
+        </Link>
+      </div>
+
+      <div className="bg-white rounded-lg shadow p-6">
+        <h2 className="text-xl font-semibold mb-4">Articles Ready for Analysis</h2>
+        {articles.length === 0 ? (
+          <p className="text-gray-500">No articles are currently ready for analysis.</p>
+        ) : (
+          <ul className="space-y-4">
+            {articles.map(article => (
+              <li key={article._id} className="border-b pb-4 last:border-b-0">
+                <Link
+                  href={`/dashboard/analysis/${article._id}`}
+                  className="text-blue-600 hover:text-blue-800 hover:underline"
+                >
+                  {article.title}
+                </Link>
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
     </div>
   );
 }

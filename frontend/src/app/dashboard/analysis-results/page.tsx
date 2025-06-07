@@ -195,7 +195,9 @@ export default function AnalysisResults() {
                   <div className="flex items-center space-x-1">
                     <span>{column.label}</span>
                     {sortConfig?.key === column.id && (
-                      <span>{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                      <span className="text-blue-500">
+                        {sortConfig.direction === 'asc' ? '↑' : '↓'}
+                      </span>
                     )}
                   </div>
                 </th>
