@@ -18,6 +18,7 @@ import { UsersModule } from './users/users.module';
 import { AuthModule } from './auth/auth.module';
 import { DatabaseModule } from './database/database.module';
 import { SeederService } from './database/seeder.service';
+import { AnalysisModule } from './modules/analysis/analysis.module';
 
 @Module({
   imports: [
@@ -39,8 +40,9 @@ import { SeederService } from './database/seeder.service';
     PracticesModule,
     ClaimsModule,
     EvidenceModule,
-    UsersModule, 
+    UsersModule,
     AuthModule,
+    AnalysisModule,
   ],
   controllers: [AppController],
   providers: [AppService],

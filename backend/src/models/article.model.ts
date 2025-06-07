@@ -1,5 +1,6 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
 import { Document, Types } from 'mongoose';
+import { ArticleStatus } from '../modules/articles/dto/create-article.dto';
 
 export type ArticleDocument = Article & Document;
 
@@ -8,7 +9,7 @@ export class Article {
   @Prop({ required: true })
   title: string;
 
-  @Prop({ required: true })
+  @Prop({ required: true, type: [String] })
   authors: string[];
 
   @Prop({ required: true })
@@ -26,29 +27,66 @@ export class Article {
   @Prop()
   pages?: string;
 
-  @Prop({ required: true, unique: true })
-  doi: string;
+  @Prop()
+  doi?: string;
 
-  @Prop({ enum: ['PENDING', 'APPROVED', 'REJECTED'], default: 'PENDING' })
-  status: string;
-
-  @Prop({ default: 0 })
-  averageRating: number;
-
-  @Prop({ default: 0 })
-  ratingCount: number;
+  @Prop({ type: String, enum: ArticleStatus, default: ArticleStatus.PENDING })
+  status: ArticleStatus;
 
   @Prop({ type: Types.ObjectId, ref: 'User' })
-  submitter: Types.ObjectId;
-
-  @Prop({ type: Types.ObjectId, ref: 'User' })
-  moderator?: Types.ObjectId;
+  moderatedBy?: Types.ObjectId;
 
   @Prop()
-  moderationDate?: Date;
+  moderatedAt?: Date;
+
+  @Prop({ type: Types.ObjectId, ref: 'User' })
+  analyzedBy?: Types.ObjectId;
+
+  @Prop()
+  analyzedAt?: Date;
+
+  @Prop({ default: false })
+  isPeerReviewed: boolean;
+
+  @Prop({ default: false })
+  isRelevantToSE: boolean;
+
+  @Prop({ default: false })
+  isDuplicateChecked: boolean;
+
+  @Prop()
+  duplicateCheckResult?: string;
+
+  @Prop()
+  rejectionCheckResult?: string;
 
   @Prop()
   rejectionReason?: string;
+
+  @Prop()
+  rating?: number;
+
+  @Prop({ type: Object })
+  analysisResult?: {
+    researchType: string;
+    participantType: string;
+    methodology: string;
+    findings: string;
+    limitations: string;
+    recommendations: string;
+    notes: string;
+  };
+
+  @Prop()
+  researchType?: string;
+
+  @Prop()
+  participantType?: string;
+
+  @Prop()
+  findings?: string;
+
+  _id: Types.ObjectId;
 }
 
 export const ArticleSchema = SchemaFactory.createForClass(Article);

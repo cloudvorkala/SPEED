@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { User } from './schemas/user.schema';
@@ -39,5 +39,26 @@ export class UsersService {
   async delete(id: string): Promise<boolean> {
     const result = await this.userModel.findByIdAndDelete(id).exec();
     return !!result;
+  }
+
+  async update(id: string, updateData: Partial<User>): Promise<User> {
+    // If toggling moderator status, also update the role
+    if (updateData.hasOwnProperty('isModerator')) {
+      updateData.role = updateData.isModerator ? 'moderator' : 'user';
+    }
+    // If toggling analyst status, also update the role
+    if (updateData.hasOwnProperty('isAnalyst')) {
+      updateData.role = updateData.isAnalyst ? 'analyst' : 'user';
+    }
+
+    const user = await this.userModel.findByIdAndUpdate(
+      id,
+      { $set: updateData },
+      { new: true }
+    );
+    if (!user) {
+      throw new NotFoundException('User not found');
+    }
+    return user;
   }
 }

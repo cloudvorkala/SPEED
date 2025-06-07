@@ -13,7 +13,19 @@ export class User extends Document {
   password: string;
 
   @Prop({ required: true, default: 'USER' })
-  role: string;  
+  role: string;
+
+  @Prop({ default: false })
+  isAdmin: boolean;
+
+  @Prop({ default: false })
+  isModerator: boolean;
+
+  @Prop({ default: false })
+  isAnalyst: boolean;
+
+  @Prop()
+  lastLogin?: Date;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

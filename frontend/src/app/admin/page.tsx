@@ -11,7 +11,7 @@ export default function AdminPanel() {
 
   // Redirect non-admin users away from this page
   useEffect(() => {
-    if (user && user.role !== "ADMIN") {
+    if (user && !user.isAdmin) {
       router.replace("/");
     }
   }, [user, router]);
@@ -22,7 +22,7 @@ export default function AdminPanel() {
   }
 
   // Show error if not an admin
-  if (!user || user.role !== "ADMIN") {
+  if (!user || !user.isAdmin) {
     return <div className="p-8 text-center">Access denied.</div>;
   }
 

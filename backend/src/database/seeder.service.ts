@@ -5,7 +5,7 @@ import { Article, ArticleDocument } from '../models/article.model';
 import { User, UserDocument } from '../models/user.model';
 import { Practice, PracticeDocument } from '../models/practice.model';
 import { Claim, ClaimDocument } from '../models/claim.model';
-import * as bcrypt from 'bcrypt';  
+import * as bcrypt from 'bcrypt';
 
 @Injectable()
 export class SeederService {
@@ -28,7 +28,8 @@ export class SeederService {
           name: 'Admin User',
           email: 'admin@example.com',
           password: hashedPasswordAdmin,
-          role: 'ADMIN',
+          isAdmin: true,
+          isModerator: true
         },
       },
       { upsert: true }
@@ -50,7 +51,6 @@ export class SeederService {
       name: 'John Doe',
       email: 'john@example.com',
       password: hashedPasswordUser,
-      role: 'USER',
     });
 
     // create practices
@@ -68,12 +68,24 @@ export class SeederService {
         year: 2023,
         doi: '10.1234/jse.2023.001',
         status: 'APPROVED',
-        averageRating: 4.5,
-        ratingCount: 10,
-        submitter: user._id,
-        moderator: user._id,
-        moderationDate: new Date(),
+        isPeerReviewed: true,
+        isRelevantToSE: true,
+        isDuplicateChecked: true,
+        moderatedBy: user._id,
+        moderatedAt: new Date(),
+        rating: 4.5
       },
+      {
+        title: 'Continuous Integration in Modern Software Development',
+        authors: ['Alice Johnson', 'Bob Wilson'],
+        journal: 'International Conference on Software Engineering',
+        year: 2023,
+        doi: '10.1234/icse.2023.002',
+        status: 'PENDING',
+        isPeerReviewed: true,
+        isRelevantToSE: true,
+        isDuplicateChecked: false
+      }
     ]);
 
     // create claims

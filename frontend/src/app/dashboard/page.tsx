@@ -2,28 +2,53 @@
 
 import Link from "next/link";
 import { useEffect, useState } from "react";
+import { useAuth } from "../../contexts/AuthContext";
+import { useRouter } from "next/navigation";
+import { API_ENDPOINTS } from "../../config/api";
 
 interface Article {
   _id: string;
   title: string;
   authors: string[];
+  journal: string;
   year: number;
-  status: string;
+  status: "PENDING" | "APPROVED" | "REJECTED";
+  isPeerReviewed?: boolean;
+  isRelevantToSE?: boolean;
+  isDuplicateChecked?: boolean;
+  rating?: number;
 }
 
 export default function Dashboard() {
+  const { user, loading: authLoading } = useAuth();
+  const router = useRouter();
   const [articles, setArticles] = useState<Article[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
   useEffect(() => {
+    console.log('Current user in Dashboard:', user);
+    if (!authLoading && !user) {
+      router.replace("/");
+      return;
+    }
+
     const fetchArticles = async () => {
       try {
+        const token = localStorage.getItem('token');
+        if (!token) {
+          setError("No authentication token found");
+          setLoading(false);
+          return;
+        }
+
         console.log("Fetching articles...");
-        const response = await fetch("http://localhost:4000/articles", {
+        const response = await fetch(API_ENDPOINTS.ARTICLES, {
           method: "GET",
           headers: {
+            "Authorization": `Bearer ${token}`,
             "Accept": "application/json",
+            "Content-Type": "application/json"
           },
         });
 
@@ -45,8 +70,18 @@ export default function Dashboard() {
       }
     };
 
-    fetchArticles();
-  }, []);
+    if (user) {
+      fetchArticles();
+    }
+  }, [user, authLoading, router]);
+
+  if (authLoading) {
+    return <div className="p-8 text-center">Loading...</div>;
+  }
+
+  if (!user) {
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-50">
@@ -80,6 +115,28 @@ export default function Dashboard() {
                 >
                   Submit Article
                 </Link>
+                <Link
+                  href="/dashboard/analysis-results"
+                  className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
+                >
+                  Analysis Results
+                </Link>
+                {user?.isModerator && (
+                  <Link
+                    href="/dashboard/moderation"
+                    className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
+                  >
+                    Moderation
+                  </Link>
+                )}
+                {user?.isAnalyst && (
+                  <Link
+                    href="/dashboard/analysis"
+                    className="px-3 py-2 text-sm font-medium text-gray-500 hover:text-gray-900"
+                  >
+                    Analysis
+                  </Link>
+                )}
               </div>
             </div>
           </div>
@@ -91,6 +148,48 @@ export default function Dashboard() {
         <h1 className="text-2xl font-bold text-gray-900 mb-6">Welcome to SPEED</h1>
 
         <div className="grid grid-cols-1 gap-6 sm:grid-cols-2 lg:grid-cols-3">
+          {/* Analysis Results - Available to all users */}
+          <Link
+            href="/dashboard/analysis-results"
+            className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+          >
+            <h2 className="text-xl font-semibold text-gray-900 mb-2">Analysis Results</h2>
+            <p className="text-gray-600">View all analyzed articles and their results</p>
+          </Link>
+
+          {/* Analysis - Only for analysts */}
+          {user?.isAnalyst && (
+            <Link
+              href="/dashboard/analysis"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Analysis</h2>
+              <p className="text-gray-600">Analyze articles ready for review</p>
+            </Link>
+          )}
+
+          {/* Moderation - Only for moderators and admins */}
+          {(user?.isModerator || user?.isAdmin) && (
+            <Link
+              href="/dashboard/moderation"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Moderation</h2>
+              <p className="text-gray-600">Review and moderate submitted articles</p>
+            </Link>
+          )}
+
+          {/* Admin Panel - Only for admins */}
+          {user?.isAdmin && (
+            <Link
+              href="/admin"
+              className="block p-6 bg-white rounded-lg shadow hover:shadow-md transition-shadow"
+            >
+              <h2 className="text-xl font-semibold text-gray-900 mb-2">Admin Panel</h2>
+              <p className="text-gray-600">Manage users and system settings</p>
+            </Link>
+          )}
+
           {/* Practices card */}
           <div className="bg-white overflow-hidden shadow rounded-lg">
             <div className="px-4 py-5 sm:p-6">
@@ -101,7 +200,7 @@ export default function Dashboard() {
             </div>
             <div className="bg-gray-50 px-4 py-4 sm:px-6">
               <Link href="/dashboard/practices" className="text-sm text-blue-600 hover:text-blue-800">
-                Browse practices →
+                View Practices →
               </Link>
             </div>
           </div>

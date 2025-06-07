@@ -4,6 +4,7 @@ import { useAuth } from "../../../contexts/AuthContext";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
 import Link from "next/link";
+import { API_ENDPOINTS } from "../../../config/api";
 
 // Define the shape of article data
 interface Article {
@@ -11,25 +12,25 @@ interface Article {
   title: string;
   authors: string[];
   year: number;
-  status: "PENDING" | "APPROVED" | "REJECTED";
+  status: "PENDING" | "APPROVED" | "REJECTED" | "READY_FOR_ANALYSIS";
 }
 
 export default function AdminArticles() {
-  const { user, logout, loading: authLoading } = useAuth(); // Get user info and auth state
+  const { user, logout, loading: authLoading } = useAuth();
   const router = useRouter();
-  const [articles, setArticles] = useState<Article[]>([]); // Store fetched articles
-  const [loading, setLoading] = useState(true); // Loading state
-  const [error, setError] = useState(""); // Error message
+  const [articles, setArticles] = useState<Article[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   // Authentication check on load
   useEffect(() => {
     if (!authLoading) {
       if (!user) {
-        router.replace("/"); // Redirect if not logged in
-      } else if (user.role !== "ADMIN") {
-        router.replace("/"); // Redirect if not admin
+        router.replace("/");
+      } else if (!user.isAdmin) {
+        router.replace("/admin");
       } else {
-        fetchArticles(); // Load articles if valid admin
+        fetchArticles();
       }
     }
   }, [authLoading, user, router]);
@@ -38,10 +39,36 @@ export default function AdminArticles() {
   const fetchArticles = async () => {
     try {
       const token = localStorage.getItem("token");
-      const res = await fetch("http://localhost:4000/articles", {
-        headers: { Authorization: `Bearer ${token}` },
+      if (!token) {
+        setError("No authentication token found");
+        setLoading(false);
+        return;
+      }
+
+      const res = await fetch(`${API_ENDPOINTS.ARTICLES}/admin/all`, {
+        headers: {
+          'Authorization': `Bearer ${token}`,
+          'Accept': 'application/json'
+        }
       });
-      if (!res.ok) throw new Error("Failed to fetch articles");
+
+      if (res.status === 401) {
+        setError("Your session has expired. Please login again.");
+        logout();
+        router.replace("/");
+        return;
+      }
+
+      if (res.status === 403) {
+        setError("You don't have permission to access this page.");
+        router.replace("/admin");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error("Failed to fetch articles");
+      }
+
       const data = await res.json();
       setArticles(data);
     } catch (err) {
@@ -59,30 +86,53 @@ export default function AdminArticles() {
       : "Are you sure you want to delete this article? This action is irreversible.";
     if (!confirm(message)) return;
 
-    const url = status
-      ? `http://localhost:4000/articles/${id}/moderate`
-      : `http://localhost:4000/articles/${id}`;
-    const method = status ? "PUT" : "DELETE";
     const token = localStorage.getItem("token");
+    if (!token) {
+      alert("No authentication token found");
+      return;
+    }
 
     try {
+      const url = status
+        ? `${API_ENDPOINTS.ARTICLES}/${id}/status`
+        : `${API_ENDPOINTS.ARTICLES}/${id}`;
+      const method = status ? "PUT" : "DELETE";
+
+      // If approving, set status to READY_FOR_ANALYSIS
+      const statusToSend = status === "APPROVED" ? "READY_FOR_ANALYSIS" : status;
+
       const res = await fetch(url, {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${token}`
+          "Authorization": `Bearer ${token}`,
+          "Accept": "application/json"
         },
-        body: status ? JSON.stringify({ status }) : undefined,
+        body: status ? JSON.stringify({ status: statusToSend }) : undefined,
       });
 
-      if (!res.ok) throw new Error(`${action} failed`);
+      if (res.status === 401) {
+        alert("Your session has expired. Please login again.");
+        logout();
+        router.replace("/");
+        return;
+      }
+
+      if (res.status === 403) {
+        alert("You don't have permission to perform this action.");
+        return;
+      }
+
+      if (!res.ok) {
+        throw new Error(`${action} failed`);
+      }
 
       // Update UI after action
-      setArticles((prev) =>
-        status
-          ? prev.map((a) => (a._id === id ? { ...a, status } : a)) // Update status
-          : prev.filter((a) => a._id !== id) // Remove deleted article
-      );
+      if (status) {
+        setArticles(prev => prev.map(a => a._id === id ? { ...a, status: statusToSend as Article['status'] } : a));
+      } else {
+        setArticles(prev => prev.filter(a => a._id !== id));
+      }
     } catch (err) {
       alert(err instanceof Error ? err.message : "Action failed");
     }
@@ -90,7 +140,7 @@ export default function AdminArticles() {
 
   // Handle loading and permission states
   if (authLoading || loading) return <div className="p-8 text-center">Loading...</div>;
-  if (!user || user.role !== "ADMIN") return <div className="p-8 text-center">Access denied.</div>;
+  if (!user || !user.isAdmin) return <div className="p-8 text-center">Access denied.</div>;
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col">
@@ -132,7 +182,7 @@ export default function AdminArticles() {
                     <td className="px-6 py-4">{a.year}</td>
                     <td className="px-6 py-4">
                       <span className={`inline-flex px-2 py-1 rounded-full text-xs font-semibold ${
-                        a.status === "APPROVED" ? "bg-green-100 text-green-800" :
+                        a.status === "READY_FOR_ANALYSIS" ? "bg-green-100 text-green-800" :
                         a.status === "REJECTED" ? "bg-red-100 text-red-800" :
                         "bg-yellow-100 text-yellow-800"
                       }`}>
@@ -152,16 +202,15 @@ export default function AdminArticles() {
                             </button>
                             <button
                               onClick={() => handleAction(a._id, "REJECTED")}
-                              className="bg-yellow-500 hover:bg-yellow-600 text-white px-3 py-1 rounded text-xs transition"
+                              className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
                             >
                               Reject
                             </button>
                           </>
                         )}
-                        {/* Delete available for all statuses */}
                         <button
                           onClick={() => handleAction(a._id)}
-                          className="bg-red-500 hover:bg-red-600 text-white px-3 py-1 rounded text-xs transition"
+                          className="bg-gray-500 hover:bg-gray-600 text-white px-3 py-1 rounded text-xs transition"
                         >
                           Delete
                         </button>
