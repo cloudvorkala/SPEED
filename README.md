@@ -6,6 +6,10 @@ New articles need to be approved by moderator then can be analyse by a analyst u
 I have two user ready for testing, test3@test.com as moderator, test4@test.com as analyst, their passwd are both "test1234"
 but be free to test by create your own one!
 
+backend needs a .env :  DATABASE_URI=mongodb+srv://Test1:Speedtest1user@clustertest.rpsjmme.mongodb.net/?retryWrites=true&w=majority&appName=ClusterTEST
+//This will be invalid after ENSE701 for semester 1 ends.
+
+
 SPEED is a platform for storing and retrieving evidence related to software engineering practices. The system allows users to submit, review, analyze, and search for research evidence on the effectiveness of software engineering practices.
 
 ## Project Structure
