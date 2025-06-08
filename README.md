@@ -104,6 +104,7 @@ The system includes the following main data models:
 - Analyze literature and extract evidence
 - Search evidence by practice, claim, and year
 - Visualize search results
+- View analysis results (available to all users)
 
 ## Development Environment Setup
 
