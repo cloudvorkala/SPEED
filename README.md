@@ -66,6 +66,7 @@ backend/
 
 ## Data Models
 
+
 The system includes the following main data models:
 
 ### 1. User
@@ -95,11 +96,6 @@ The system includes the following main data models:
 - Participant Type: student, practitioner, mixed, other
 - Analyst notes
 
-### 6. SavedQuery
-- Query name
-- User
-- Query conditions: practice, claim, year range
-
 ## Features
 
 - User registration and authentication
@@ -107,7 +103,6 @@ The system includes the following main data models:
 - Review submitted literature
 - Analyze literature and extract evidence
 - Search evidence by practice, claim, and year
-- Save common queries
 - Visualize search results
 
 ## Development Environment Setup
