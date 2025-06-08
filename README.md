@@ -24,12 +24,20 @@ The project consists of two parts:
 ```
 frontend/
   ├── src/
-  │   ├── app/            # App Router pages
+  │   ├── app/            # Next.js App Router pages
   │   ├── components/     # Reusable components
-  │   ├── contexts/       # Context providers
+  │   ├── config/         # Configuration files
+  │   ├── contexts/       # React context providers
   │   └── types/          # TypeScript type definitions
   ├── public/             # Static assets
-  └── package.json        # Dependency configuration
+  ├── .next/              # Next.js build output
+  ├── .vercel/            # Vercel deployment files
+  ├── node_modules/       # Dependencies
+  ├── package.json        # Project configuration
+  ├── tsconfig.json       # TypeScript configuration
+  ├── next.config.ts      # Next.js configuration
+  ├── tailwind.config.js  # Tailwind CSS configuration
+  └── vercel.json         # Vercel deployment configuration
 ```
 
 ### Backend Structure
@@ -37,34 +45,60 @@ frontend/
 ```
 backend/
   ├── src/
-  │   ├── models/         # MongoDB data models
-  │   ├── modules/        # Feature modules
-  │   │   ├── articles/   # Article module
-  │   │   ├── practices/  # Practice module
-  │   │   ├── claims/     # Claim module
-  │   │   └── evidence/   # Evidence module
-  │   ├── users/          # User module
+  │   ├── admin/          # Admin module
+  │   ├── articles/       # Article module
   │   ├── auth/           # Authentication module
   │   ├── database/       # Database configuration
+  │   ├── models/         # MongoDB data models
+  │   ├── modules/        # Feature modules
+  │   ├── users/          # User module
   │   ├── app.module.ts   # Main application module
   │   ├── app.service.ts  # Main application service
   │   ├── app.controller.ts # Main application controller
   │   └── main.ts         # Application entry point
   ├── test/               # Test files
-  └── package.json        # Dependency configuration
+  ├── dist/               # Build output
+  ├── node_modules/       # Dependencies
+  ├── package.json        # Project configuration
+  ├── tsconfig.json       # TypeScript configuration
+  └── nest-cli.json       # NestJS CLI configuration
 ```
 
 ## Data Models
 
 The system includes the following main data models:
 
-1. **Article**: Represents published research articles
-2. **Practice**: Software engineering practices (e.g., TDD, Pair Programming)
-3. **Claim**: Claims about software engineering practices (e.g., "improves code quality")
-4. **Evidence**: Evidence linking articles and claims, including results (agree, disagree, neutral)
-5. **User**: System user information and roles
-6. **Rating**: User ratings for articles
-7. **SavedQuery**: User-saved search queries
+### 1. User
+- Basic Info: name, email, password
+- Roles: regular user, admin, moderator, analyst
+- Status: last login time, etc.
+
+### 2. Article
+- Basic Info: title, authors, journal, year, volume, number, pages, DOI
+- Status: pending, reviewed, analyzed
+- Review Info: reviewer, review time, review result
+- Analysis Info: analyst, analysis time, analysis result
+- Quality Checks: peer-reviewed, SE relevance, duplicate check
+
+### 3. Practice
+- Name (unique)
+- Description
+
+### 4. Claim
+- Description
+- Associated practice
+
+### 5. Evidence
+- Associated article and claim
+- Result: agree, disagree, neutral
+- Research Type: case study, experiment, survey, literature review, other
+- Participant Type: student, practitioner, mixed, other
+- Analyst notes
+
+### 6. SavedQuery
+- Query name
+- User
+- Query conditions: practice, claim, year range
 
 ## Features
 
@@ -74,7 +108,6 @@ The system includes the following main data models:
 - Analyze literature and extract evidence
 - Search evidence by practice, claim, and year
 - Save common queries
-- Rate articles
 - Visualize search results
 
 ## Development Environment Setup
